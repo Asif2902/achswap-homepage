@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet, Copy, Check } from 'lucide-react'
 
 const tokens = [
   { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%', img: '/img/usdc.webp' },
   { symbol: 'wUSDC', name: 'Wrapped USDC', price: '$1.00', change: '+0.02%', img: '/img/logos/wusdc.png' },
-  { symbol: 'ACHS', name: 'Achswap Token', price: '$0.42', change: '+12.5%', img: '/img/logos/achs-token.png' },
+  { symbol: 'ACHS', name: 'Achswap Token', price: '$0.014', change: '+12.5%', img: '/img/logos/achs-token.png' },
 ]
 
 const features = [
@@ -202,9 +202,12 @@ function Features() {
 }
 
 function MCPSection() {
+  const [copied, setCopied] = useState<string | null>(null)
+  
   const configs = [
     {
       name: 'Claude Code',
+      file: '~/.claude.json',
       code: `{
   "mcpServers": {
     "achswap": {
@@ -217,13 +220,8 @@ function MCPSection() {
 }`,
     },
     {
-      name: 'Cursor',
-      code: `Name: achswap
-URL: https://api.achswapfi.xyz/mcp/message
-Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
-    },
-    {
       name: 'Cline',
+      file: '.cline/mcp.json',
       code: `{
   "mcpServers": {
     "achswap": {
@@ -237,6 +235,7 @@ Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
     },
     {
       name: 'OpenCode',
+      file: '~/.opencode/mcp.json',
       code: `{
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
@@ -253,12 +252,19 @@ Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
     },
     {
       name: 'cURL',
+      file: 'Terminal',
       code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
   -H "Content-Type: application/json" \\
   -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_swap_quote","arguments":{"amount_in":"1000000000000000000","token_in":"USDC","token_out":"ACHS"}}}'`,
     },
   ]
+
+  const handleCopy = (code: string, name: string) => {
+    navigator.clipboard.writeText(code)
+    setCopied(name)
+    setTimeout(() => setCopied(null), 2000)
+  }
 
   return (
     <section id="mcp" className="py-12 md:py-16 bg-[hsl(220_25%_10%)]/30">
@@ -279,14 +285,25 @@ Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
           </a>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3">
           {configs.map((config) => (
             <div
               key={config.name}
               className="p-3 rounded-lg bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
             >
-              <h3 className="font-semibold text-sm mb-2">{config.name}</h3>
-              <pre className="text-[10px] md:text-xs text-[hsl(215_20%_70%)] overflow-x-auto max-h-32 p-2 bg-[hsl(220_25%_8%)] rounded">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-sm">{config.name}</h3>
+                  <p className="text-xs text-[hsl(215_20%_70%)]">{config.file}</p>
+                </div>
+                <button
+                  onClick={() => handleCopy(config.code, config.name)}
+                  className="p-2 text-[hsl(215_20%_70%)] hover:text-white transition-colors"
+                >
+                  {copied === config.name ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <pre className="text-[10px] leading-relaxed text-[hsl(215_20%_70%)] overflow-x-auto max-h-24 p-2 bg-[hsl(220_25%_8%)] rounded">
                 <code>{config.code}</code>
               </pre>
             </div>
