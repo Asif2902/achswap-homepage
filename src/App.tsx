@@ -16,10 +16,10 @@ const features = [
 ]
 
 const stats = [
-  { value: '$24.5M', label: 'Total Value Locked' },
-  { value: '156K+', label: 'Transactions' },
-  { value: '12K+', label: 'Traders' },
-  { value: '99.9%', label: 'Uptime' },
+  { value: '$192K', label: 'Total Value Locked' },
+  { value: '2.5K', label: 'Transactions' },
+  { value: '100+', label: 'Active Users' },
+  { value: '$0.014', label: 'ACHS Price' },
 ]
 
 function Navbar() {
@@ -45,8 +45,8 @@ function Navbar() {
           
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-[hsl(215_20%_70%)] hover:text-white transition-colors">Features</a>
+            <a href="#mcp" className="text-sm text-[hsl(215_20%_70%)] hover:text-white transition-colors">MCP</a>
             <a href="#" className="text-sm text-[hsl(215_20%_70%)] hover:text-white transition-colors">Docs</a>
-            <a href="#" className="text-sm text-[hsl(215_20%_70%)] hover:text-white transition-colors">Analytics</a>
           </div>
           
           <div className="flex items-center gap-3">
@@ -68,8 +68,8 @@ function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-[hsl(217_33%_18%)] space-y-3">
             <a href="#features" className="block text-sm text-[hsl(215_20%_70%)]">Features</a>
+            <a href="#mcp" className="block text-sm text-[hsl(215_20%_70%)]">MCP</a>
             <a href="#" className="block text-sm text-[hsl(215_20%_70%)]">Docs</a>
-            <a href="#" className="block text-sm text-[hsl(215_20%_70%)]">Analytics</a>
             <a
               href="https://app.achswapfi.xyz"
               className="flex w-full px-4 py-2 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-medium text-sm rounded-lg justify-center"
@@ -201,6 +201,104 @@ function Features() {
   )
 }
 
+function MCPSection() {
+  const configs = [
+    {
+      name: 'Claude Code',
+      code: `{
+  "mcpServers": {
+    "achswap": {
+      "url": "https://api.achswapfi.xyz/mcp/message",
+      "headers": {
+        "X-Private-Key": "0xYOUR_PRIVATE_KEY"
+      }
+    }
+  }
+}`,
+    },
+    {
+      name: 'Cursor',
+      code: `Name: achswap
+URL: https://api.achswapfi.xyz/mcp/message
+Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
+    },
+    {
+      name: 'Cline',
+      code: `{
+  "mcpServers": {
+    "achswap": {
+      "url": "https://api.achswapfi.xyz/mcp/message",
+      "headers": {
+        "X-Private-Key": "0xYOUR_PRIVATE_KEY"
+      }
+    }
+  }
+}`,
+    },
+    {
+      name: 'OpenCode',
+      code: `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "achswap": {
+      "type": "remote",
+      "url": "https://api.achswapfi.xyz/mcp",
+      "headers": {
+        "X-Private-Key": "0xYOUR_PRIVATE_KEY"
+      },
+      "enabled": true
+    }
+  }
+}`,
+    },
+    {
+      name: 'cURL',
+      code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
+  -H "Content-Type: application/json" \\
+  -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_swap_quote","arguments":{"amount_in":"1000000000000000000","token_in":"USDC","token_out":"ACHS"}}}'`,
+    },
+  ]
+
+  return (
+    <section id="mcp" className="py-16 bg-[hsl(220_25%_10%)]/30">
+      <div className="max-w-4xl mx-auto px-4">
+        <h2 className="text-2xl font-bold text-center mb-4">MCP Server</h2>
+        <p className="text-[hsl(215_20%_70%)] text-center mb-8 max-w-xl mx-auto">
+          Connect any AI agent to Achswap. Swap tokens, add liquidity, check pools — all through natural language.
+        </p>
+        
+        <div className="text-center mb-8">
+          <a
+            href="https://api.achswapfi.xyz/mcp/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[hsl(217_91%_60%)] text-[hsl(217_91%_60%)] font-medium rounded-lg hover:bg-[hsl(217_91%_60%)]/10 transition-colors"
+          >
+            View API Docs
+          </a>
+        </div>
+
+        <div className="grid gap-4">
+          {configs.map((config) => (
+            <div
+              key={config.name}
+              className="p-4 rounded-xl bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold">{config.name}</h3>
+              </div>
+              <pre className="text-xs text-[hsl(215_20%_70%)] overflow-x-auto p-3 bg-[hsl(220_25%_8%)] rounded-lg">
+                <code>{config.code}</code>
+              </pre>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function CTA() {
   return (
     <section className="py-20">
@@ -253,6 +351,7 @@ export default function App() {
       <Stats />
       <Tokens />
       <Features />
+      <MCPSection />
       <CTA />
       <Footer />
     </div>
