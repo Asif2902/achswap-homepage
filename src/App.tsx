@@ -261,34 +261,32 @@ Headers: X-Private-Key: 0xYOUR_PRIVATE_KEY`,
   ]
 
   return (
-    <section id="mcp" className="py-16 bg-[hsl(220_25%_10%)]/30">
+    <section id="mcp" className="py-12 md:py-16 bg-[hsl(220_25%_10%)]/30">
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-2xl font-bold text-center mb-4">MCP Server</h2>
-        <p className="text-[hsl(215_20%_70%)] text-center mb-8 max-w-xl mx-auto">
+        <p className="text-[hsl(215_20%_70%)] text-center mb-6 max-w-xl mx-auto text-sm md:text-base">
           Connect any AI agent to Achswap. Swap tokens, add liquidity, check pools — all through natural language.
         </p>
         
-        <div className="text-center mb-8">
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
           <a
-            href="https://api.achswapfi.xyz/mcp/"
+            href="https://community.arc.network/home/forum/boards/ecosystem-showcase-and-launches-pdq/posts/achswap-v2-mcp-server-connect-any-ai-agent-to-a-dex-on-arc-testnet-qp5nh6abph"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[hsl(217_91%_60%)] text-[hsl(217_91%_60%)] font-medium rounded-lg hover:bg-[hsl(217_91%_60%)]/10 transition-colors"
+            className="px-4 py-2 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-medium text-sm rounded-lg hover:opacity-90 transition-opacity"
           >
-            View API Docs
+            Full Documentation
           </a>
         </div>
 
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:grid-cols-2">
           {configs.map((config) => (
             <div
               key={config.name}
-              className="p-4 rounded-xl bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
+              className="p-3 rounded-lg bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">{config.name}</h3>
-              </div>
-              <pre className="text-xs text-[hsl(215_20%_70%)] overflow-x-auto p-3 bg-[hsl(220_25%_8%)] rounded-lg">
+              <h3 className="font-semibold text-sm mb-2">{config.name}</h3>
+              <pre className="text-[10px] md:text-xs text-[hsl(215_20%_70%)] overflow-x-auto max-h-32 p-2 bg-[hsl(220_25%_8%)] rounded">
                 <code>{config.code}</code>
               </pre>
             </div>
