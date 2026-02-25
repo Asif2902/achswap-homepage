@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet, Star } from 'lucide-react'
+import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet } from 'lucide-react'
 
 const tokens = [
-  { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%' },
-  { symbol: 'wUSDC', name: 'Wrapped USDC', price: '$1.00', change: '+0.02%' },
-  { symbol: 'ACHS', name: 'Achswap Token', price: '$0.42', change: '+12.5%' },
+  { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%', img: '/img/usdc.webp' },
+  { symbol: 'wUSDC', name: 'Wrapped USDC', price: '$1.00', change: '+0.02%', img: '/img/logos/wusdc.png' },
+  { symbol: 'ACHS', name: 'Achswap Token', price: '$0.42', change: '+12.5%', img: '/img/logos/achs-token.png' },
 ]
 
 const features = [
@@ -39,9 +39,7 @@ function Navbar() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <a href="#" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[hsl(217_91%_60%)] flex items-center justify-center">
-              <Star className="w-4 h-4 text-[hsl(220_25%_8%)]" />
-            </div>
+            <img src="/img/logos/achswap-logo.png" alt="Achswap" className="w-8 h-8" />
             <span className="font-semibold text-lg">Achswap</span>
           </a>
           
@@ -53,7 +51,7 @@ function Navbar() {
           
           <div className="flex items-center gap-3">
             <a
-              href="https://achswap.com"
+              href="https://app.achswapfi.xyz"
               className="hidden sm:flex px-4 py-2 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-medium text-sm rounded-lg hover:opacity-90 transition-opacity"
             >
               Launch App
@@ -73,7 +71,7 @@ function Navbar() {
             <a href="#" className="block text-sm text-[hsl(215_20%_70%)]">Docs</a>
             <a href="#" className="block text-sm text-[hsl(215_20%_70%)]">Analytics</a>
             <a
-              href="https://achswap.com"
+              href="https://app.achswapfi.xyz"
               className="flex w-full px-4 py-2 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-medium text-sm rounded-lg justify-center"
             >
               Launch App
@@ -111,7 +109,7 @@ function Hero() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
-              href="https://achswap.com"
+              href="https://app.achswapfi.xyz"
               className="flex items-center gap-2 px-6 py-3 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               Launch App
@@ -160,9 +158,7 @@ function Tokens() {
               className="flex items-center justify-between p-4 rounded-xl bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)] hover:border-[hsl(217_91%_60%)]/30 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[hsl(217_91%_60%)]/20 flex items-center justify-center font-semibold text-[hsl(217_91%_60%)]">
-                  {token.symbol[0]}
-                </div>
+                <img src={token.img} alt={token.symbol} className="w-10 h-10 rounded-full" />
                 <div>
                   <div className="font-medium">{token.symbol}</div>
                   <div className="text-xs text-[hsl(215_20%_70%)]">{token.name}</div>
@@ -214,7 +210,7 @@ function CTA() {
           Connect your wallet and start trading on the fastest DEX on ARC Network.
         </p>
         <a
-          href="https://achswap.com"
+          href="https://app.achswapfi.xyz"
           className="inline-flex items-center gap-2 px-8 py-4 bg-[hsl(217_91%_60%)] text-[hsl(220_25%_8%)] font-semibold rounded-lg hover:opacity-90 transition-opacity"
         >
           <Wallet className="w-5 h-5" />
@@ -231,9 +227,7 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[hsl(217_91%_60%)] flex items-center justify-center">
-              <Star className="w-3 h-3 text-[hsl(220_25%_8%)]" />
-            </div>
+            <img src="/img/logos/achswap-logo.png" alt="Achswap" className="w-6 h-6" />
             <span className="font-medium">Achswap</span>
           </div>
           
