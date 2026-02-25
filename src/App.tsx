@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react'
-import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
-import { ArrowRight, Zap, Shield, Layers, TrendingUp, ChevronDown, Menu, X, Wallet, Activity, Coins, Globe, Rocket, Star } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Zap, Shield, Layers, TrendingUp, ChevronDown, Menu, X, Wallet, Star } from 'lucide-react'
 
 const tokens = [
   { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%', volume: '$12.4M' },
@@ -140,12 +140,6 @@ function FloatingToken({ delay, x, y }: { delay: number; x: number; y: number })
 }
 
 function Hero() {
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background elements */}
