@@ -285,11 +285,11 @@ function MCPSection() {
           </a>
         </div>
 
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           {configs.map((config) => (
             <div
               key={config.name}
-              className="p-3 rounded-lg bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
+              className="w-full p-3 rounded-lg bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]"
             >
               <div className="flex items-center justify-between mb-2">
                 <div>
