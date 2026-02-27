@@ -1,434 +1,449 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet, Copy, Check, ChevronDown } from 'lucide-react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet, Copy, Check, ExternalLink } from 'lucide-react'
 
-/* ─── Google Fonts injected via style tag ─── */
-const fontStyle = `
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
-`
+/* ── palette (original blue, kept exactly) ── */
+const C = {
+  blue:       'hsl(217 91% 60%)',
+  blueDim:    'hsla(217,91%,60%,0.1)',
+  blueBorder: 'hsla(217,91%,60%,0.22)',
+  blueGlow:   'hsla(217,91%,60%,0.35)',
+  bg:         'hsl(220 25% 8%)',
+  surface:    'hsl(220 25% 10%)',
+  surface2:   'hsl(220 25% 12%)',
+  border:     'hsl(217 33% 15%)',
+  muted:      'hsl(215 20% 60%)',
+}
 
 const tokens = [
-  { symbol: 'USDC', name: 'USD Coin', price: '$1.00', change: '+0.01%', color: '#2775CA' },
-  { symbol: 'wUSDC', name: 'Wrapped USDC', price: '$1.00', change: '+0.02%', color: '#5AC8FA' },
-  { symbol: 'ACHS', name: 'Achswap Token', price: '$0.014', change: '+12.5%', color: '#4FFFB0' },
+  { symbol: 'USDC',  name: 'USD Coin',      price: '$1.00',  change: '+0.01%', img: '/img/usdc.webp' },
+  { symbol: 'wUSDC', name: 'Wrapped USDC',  price: '$1.00',  change: '+0.02%', img: '/img/logos/wusdc.png' },
+  { symbol: 'ACHS',  name: 'Achswap Token', price: '$0.014', change: '+12.5%', img: '/img/logos/achs-token.png' },
 ]
 
 const features = [
-  { icon: Zap, title: 'Lightning Fast', desc: 'Sub-second transactions on ARC Network', accent: '#4FFFB0' },
-  { icon: Shield, title: 'Secure', desc: 'Battle-tested smart contracts audited end-to-end', accent: '#38BDF8' },
-  { icon: Layers, title: 'V2 & V3', desc: 'Concentrated liquidity pools for capital efficiency', accent: '#A78BFA' },
-  { icon: TrendingUp, title: 'Best Rates', desc: 'Smart routing finds the optimal path for every swap', accent: '#FB923C' },
+  { icon: Zap,        title: 'Lightning Fast', desc: 'Sub-second transactions on ARC Network' },
+  { icon: Shield,     title: 'Secure',         desc: 'Battle-tested smart contracts' },
+  { icon: Layers,     title: 'V2 & V3',        desc: 'Concentrated liquidity pools' },
+  { icon: TrendingUp, title: 'Best Rates',      desc: 'Smart routing for optimal swaps' },
 ]
 
 const stats = [
-  { value: '$192K', label: 'Total Value Locked' },
-  { value: '2.5K', label: 'Transactions' },
-  { value: '100+', label: 'Active Users' },
+  { value: '$192K',  label: 'Total Value Locked' },
+  { value: '2.5K',   label: 'Transactions' },
+  { value: '100+',   label: 'Active Users' },
   { value: '$0.014', label: 'ACHS Price' },
 ]
 
-/* ─── Animated counter ─── */
-function Counter({ value }: { value: string }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
+/* ── stagger children helper ── */
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+}
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+}
+
+/* ── Fade-up used on sections ── */
+function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
   return (
-    <span ref={ref}>
-      <motion.span
-        initial={{ opacity: 0, y: 10 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.5 }}
-      >
-        {value}
-      </motion.span>
-    </span>
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay }}
+      style={style}
+    >
+      {children}
+    </motion.div>
   )
 }
 
-/* ─── Navbar ─── */
+/* ══════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════ */
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 30)
+    const fn = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', fn)
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
   return (
-    <nav
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        transition: 'all 0.3s',
-        background: scrolled ? 'rgba(8,10,18,0.85)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(16px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-      }}
-    >
-      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      transition: 'all 0.25s',
+      background: scrolled ? 'hsla(220,25%,8%,0.88)' : 'transparent',
+      backdropFilter: scrolled ? 'blur(18px) saturate(150%)' : 'none',
+      borderBottom: `1px solid ${scrolled ? C.border : 'transparent'}`,
+    }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 62 }}>
+
           {/* Logo */}
-          <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, fontWeight: 800, color: '#080A12', fontFamily: 'Syne, sans-serif',
-            }}>A</div>
-            <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', letterSpacing: -0.3 }}>
-              Achswap
-            </span>
+          <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
+            <img src="/img/logos/achswap-logo.png" alt="Achswap" style={{ width: 30, height: 30, borderRadius: 8 }} />
+            <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 15, color: '#fff' }}>Achswap</span>
           </a>
 
-          {/* Desktop links */}
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }} className="desktop-nav">
-            {['Features', 'MCP', 'Docs'].map(l => (
-              <a key={l} href={l === 'Docs' ? '#' : `#${l.toLowerCase()}`}
-                style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', letterSpacing: 0.1, transition: 'color 0.2s' }}
+          {/* Desktop nav */}
+          <div className="dn-links" style={{ display: 'flex', gap: 26 }}>
+            {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', '#']].map(([l, h]) => (
+              <a key={l} href={h} style={{ fontFamily: 'Inter', fontSize: 13.5, color: C.muted, textDecoration: 'none', transition: 'color .2s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}
+                onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
               >{l}</a>
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <a href="https://app.achswapfi.xyz"
-              style={{
-                padding: '9px 20px', borderRadius: 10,
-                background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-                color: '#080A12', fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
-                fontSize: 13, textDecoration: 'none', letterSpacing: 0.2,
-                transition: 'opacity 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-              className="desktop-nav"
-            >
-              Launch App
-            </a>
-            <button
-              onClick={() => setOpen(!open)}
-              className="mobile-nav-btn"
-              style={{ background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 8, padding: 8, color: '#fff', cursor: 'pointer', display: 'none' }}
-            >
-              {open ? <X size={20} /> : <Menu size={20} />}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <a href="https://app.achswapfi.xyz" className="dn-links" style={{
+              padding: '8px 16px', borderRadius: 8,
+              background: C.blue, color: C.bg,
+              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
+              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.boxShadow = `0 0 20px ${C.blueGlow}` }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = 'none' }}
+            >Launch App</a>
+
+            <button className="mn-btn" onClick={() => setOpen(o => !o)} style={{
+              display: 'none', background: C.surface, border: `1px solid ${C.border}`,
+              borderRadius: 8, padding: 7, color: C.muted, cursor: 'pointer', lineHeight: 0,
+            }}>
+              {open ? <X size={17} /> : <Menu size={17} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              padding: '16px 0 20px', borderTop: '1px solid rgba(255,255,255,0.06)',
-              display: 'flex', flexDirection: 'column', gap: 4,
-            }}
-          >
-            {['Features', 'MCP', 'Docs'].map(l => (
-              <a key={l} href={l === 'Docs' ? '#' : `#${l.toLowerCase()}`}
-                onClick={() => setOpen(false)}
-                style={{ padding: '10px 4px', fontFamily: 'DM Sans, sans-serif', fontSize: 15, color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}
-              >{l}</a>
-            ))}
-            <a href="https://app.achswapfi.xyz"
-              style={{
-                marginTop: 8, padding: '12px 0', borderRadius: 10, textAlign: 'center',
-                background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-                color: '#080A12', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, fontSize: 14, textDecoration: 'none',
-              }}
-            >Launch App</a>
-          </motion.div>
-        )}
+        {/* Mobile drawer */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              key="drawer"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}` }}
+            >
+              <div style={{ padding: '12px 0 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', '#']].map(([l, h]) => (
+                  <a key={l} href={h} onClick={() => setOpen(false)}
+                    style={{ padding: '10px 2px', fontFamily: 'Inter', fontSize: 14, color: C.muted, textDecoration: 'none' }}
+                  >{l}</a>
+                ))}
+                <a href="https://app.achswapfi.xyz" style={{
+                  marginTop: 8, padding: '12px', borderRadius: 9, textAlign: 'center',
+                  background: C.blue, color: C.bg,
+                  fontFamily: 'Inter', fontWeight: 600, fontSize: 14, textDecoration: 'none',
+                }}>Launch App</a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   )
 }
 
-/* ─── Hero ─── */
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
 function Hero() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
+  const bgO = useTransform(scrollYProgress, [0, 0.75], [1, 0])
+
   return (
-    <section style={{ position: 'relative', minHeight: '100svh', display: 'flex', alignItems: 'center', paddingTop: 80, overflow: 'hidden' }}>
-      {/* Background mesh */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        {/* Gradient orbs */}
-        <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(79,255,176,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '30%', right: '5%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(167,139,250,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        {/* Grid pattern */}
+    <section ref={ref} style={{
+      position: 'relative', minHeight: '100svh',
+      display: 'flex', alignItems: 'center',
+      overflow: 'hidden', paddingTop: 62,
+    }}>
+      {/* Background: parallax glow + dot grid */}
+      <motion.div style={{ position: 'absolute', inset: 0, y: bgY, opacity: bgO, pointerEvents: 'none', zIndex: 0 }}>
+        {/* central glow */}
+        <div style={{
+          position: 'absolute', top: '38%', left: '50%',
+          transform: 'translate(-50%,-50%)',
+          width: 680, height: 680, borderRadius: '50%',
+          background: `radial-gradient(circle, hsla(217,91%,60%,0.13) 0%, transparent 68%)`,
+        }} />
+        {/* dot grid with vignette */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
-          backgroundSize: '48px 48px',
+          backgroundImage: `radial-gradient(circle, hsla(215,20%,65%,0.18) 1px, transparent 1px)`,
+          backgroundSize: '28px 28px',
+          maskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 100%)',
         }} />
-      </div>
+      </motion.div>
 
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1120, margin: '0 auto', padding: '0 20px', width: '100%' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto' }}
-        >
-          {/* Pill badge */}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 20px', width: '100%' }}>
+        <div style={{ textAlign: 'center', maxWidth: 660, margin: '0 auto' }}>
+
+          {/* Live badge */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{ display: 'inline-flex', marginBottom: 22 }}
           >
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              padding: '6px 14px', borderRadius: 99,
-              border: '1px solid rgba(79,255,176,0.25)',
-              background: 'rgba(79,255,176,0.06)',
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              padding: '5px 13px 5px 9px', borderRadius: 99,
+              background: C.blueDim, border: `1px solid ${C.blueBorder}`,
+              fontFamily: 'Inter', fontSize: 12, color: C.blue, fontWeight: 500,
             }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4FFFB0', boxShadow: '0 0 8px #4FFFB0' }} />
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#4FFFB0', letterSpacing: 0.8 }}>
-                LIVE ON ARC TESTNET
-              </span>
-            </div>
+              <motion.span
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                style={{ width: 6, height: 6, borderRadius: '50%', background: C.blue, display: 'block', flexShrink: 0 }}
+              />
+              Live on ARC Testnet
+            </span>
           </motion.div>
 
-          <h1 style={{
-            fontFamily: 'Syne, sans-serif', fontWeight: 800,
-            fontSize: 'clamp(38px, 8vw, 72px)', lineHeight: 1.05,
-            letterSpacing: -2, color: '#fff', marginBottom: 20,
-          }}>
-            Swap tokens at<br />
-            <span style={{ background: 'linear-gradient(120deg, #4FFFB0, #38BDF8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              the best rates
-            </span>
-          </h1>
-
-          <p style={{
-            fontFamily: 'DM Sans, sans-serif', fontWeight: 300,
-            fontSize: 'clamp(15px, 2.5vw, 18px)', lineHeight: 1.7,
-            color: 'rgba(255,255,255,0.5)', maxWidth: 480, margin: '0 auto 36px',
-          }}>
-            The decentralized exchange built for speed, security, and optimal swap rates on ARC Network.
-          </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-            <a href="https://app.achswapfi.xyz" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '14px 28px', borderRadius: 12,
-              background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-              color: '#080A12', fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
-              fontSize: 15, textDecoration: 'none', letterSpacing: 0.1,
-              boxShadow: '0 0 40px rgba(79,255,176,0.2)',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+            style={{
+              fontFamily: 'Inter, sans-serif', fontWeight: 800,
+              fontSize: 'clamp(34px, 7.5vw, 66px)', lineHeight: 1.08,
+              letterSpacing: -1.5, color: '#fff', marginBottom: 16,
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 0 60px rgba(79,255,176,0.35)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(79,255,176,0.2)' }}
+          >
+            Swap tokens at<br />
+            <span style={{ color: C.blue }}>the best rates</span>
+          </motion.h1>
+
+          {/* Sub */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.2 }}
+            style={{
+              fontFamily: 'Inter', fontSize: 'clamp(14px, 2.2vw, 16.5px)',
+              color: C.muted, lineHeight: 1.7,
+              maxWidth: 420, margin: '0 auto 30px',
+            }}
+          >
+            The decentralized exchange built for speed, security, and optimal swap rates on ARC Network.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
+          >
+            <a href="https://app.achswapfi.xyz" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              padding: '12px 24px', borderRadius: 9,
+              background: C.blue, color: C.bg,
+              fontFamily: 'Inter', fontWeight: 600, fontSize: 14,
+              textDecoration: 'none',
+              boxShadow: `0 4px 22px ${C.blueGlow}`,
+              transition: 'transform .2s, box-shadow .2s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 34px hsla(217,91%,60%,0.5)` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 22px ${C.blueGlow}` }}
             >
-              Launch App <ArrowRight size={16} />
+              Launch App <ArrowRight size={14} />
             </a>
             <a href="#features" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '14px 28px', borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.04)',
-              color: 'rgba(255,255,255,0.7)', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
-              fontSize: 15, textDecoration: 'none',
-              transition: 'border-color 0.2s, color 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              padding: '12px 24px', borderRadius: 9,
+              border: `1px solid ${C.border}`, background: C.surface,
+              color: C.muted, fontFamily: 'Inter', fontWeight: 500, fontSize: 14,
+              textDecoration: 'none', transition: 'border-color .2s, color .2s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = '#fff' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.blueBorder; e.currentTarget.style.color = '#fff' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
             >
               Learn More
             </a>
-          </div>
-        </motion.div>
-
-        {/* Scroll cue */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          style={{ position: 'absolute', bottom: -40, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}
-        >
-          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-            <ChevronDown size={18} color="rgba(255,255,255,0.25)" />
           </motion.div>
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-/* ─── Stats ─── */
-function Stats() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
-
-  return (
-    <section ref={ref} style={{ padding: '60px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-      <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px 24px' }} className="stats-grid">
-          {stats.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-              style={{ textAlign: 'center' }}
-            >
-              <div style={{
-                fontFamily: 'Syne, sans-serif', fontWeight: 800,
-                fontSize: 'clamp(26px, 4vw, 36px)', letterSpacing: -1,
-                background: 'linear-gradient(120deg, #fff 40%, rgba(255,255,255,0.5))',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>
-                <Counter value={s.value} />
-              </div>
-              <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 4, letterSpacing: 0.3 }}>
-                {s.label}
-              </div>
-            </motion.div>
-          ))}
         </div>
       </div>
     </section>
   )
 }
 
-/* ─── Tokens ─── */
-function Tokens() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-
+/* ══════════════════════════════════════════
+   STATS
+══════════════════════════════════════════ */
+function Stats() {
   return (
-    <section ref={ref} style={{ padding: '80px 20px' }}>
-      <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 4vw, 28px)', textAlign: 'center', marginBottom: 32, letterSpacing: -0.5 }}
+    <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '44px 20px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-40px' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '32px 16px' }}
+          className="stats-grid"
         >
-          Trending Tokens
-        </motion.h2>
+          {stats.map(s => (
+            <motion.div key={s.label} variants={item} style={{ textAlign: 'center' }}>
+              <div style={{
+                fontFamily: 'Inter', fontWeight: 800,
+                fontSize: 'clamp(24px, 4vw, 32px)', letterSpacing: -0.8,
+                color: C.blue,
+              }}>{s.value}</div>
+              <div style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, marginTop: 4 }}>{s.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {tokens.map((t, i) => (
+/* ══════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════ */
+function Tokens() {
+  return (
+    <section style={{ padding: '76px 20px' }}>
+      <div style={{ maxWidth: 540, margin: '0 auto' }}>
+        <FadeUp style={{ textAlign: 'center', marginBottom: 26 }}>
+          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4 }}>
+            Trending Tokens
+          </h2>
+        </FadeUp>
+
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-40px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+        >
+          {tokens.map(t => (
             <motion.div
               key={t.symbol}
-              initial={{ opacity: 0, x: -20 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
+              variants={item}
+              whileHover={{ x: 5, transition: { type: 'spring', stiffness: 380, damping: 26 } }}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '16px 20px', borderRadius: 14,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                cursor: 'default', transition: 'background 0.2s, border-color 0.2s',
+                padding: '13px 17px', borderRadius: 12,
+                background: C.surface, border: `1px solid ${C.border}`,
+                cursor: 'default', transition: 'border-color .2s, box-shadow .2s',
               }}
-              whileHover={{ scale: 1.01 }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = C.blueBorder
+                ;(e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 0 1px ${C.blueBorder}`
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = C.border
+                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+              }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                {/* Token avatar */}
-                <div style={{
-                  width: 42, height: 42, borderRadius: '50%',
-                  background: `radial-gradient(circle at 35% 35%, ${t.color}, ${t.color}88)`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 12,
-                  color: '#fff', flexShrink: 0,
-                  boxShadow: `0 0 20px ${t.color}33`,
-                }}>
-                  {t.symbol.slice(0, 2)}
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                <img src={t.img} alt={t.symbol} style={{ width: 38, height: 38, borderRadius: '50%' }} />
                 <div>
-                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, fontSize: 15, color: '#fff' }}>{t.symbol}</div>
-                  <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{t.name}</div>
+                  <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff' }}>{t.symbol}</div>
+                  <div style={{ fontFamily: 'Inter', fontSize: 11.5, color: C.muted, marginTop: 1 }}>{t.name}</div>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: '#fff', fontWeight: 500 }}>{t.price}</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#4FFFB0', marginTop: 2 }}>{t.change}</div>
+                <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff' }}>{t.price}</div>
+                <div style={{ fontFamily: 'Inter', fontSize: 11.5, color: '#4ade80', marginTop: 1 }}>{t.change}</div>
               </div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
 
-/* ─── Features ─── */
+/* ══════════════════════════════════════════
+   FEATURES
+══════════════════════════════════════════ */
 function Features() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-
   return (
-    <section id="features" ref={ref} style={{ padding: '80px 20px', background: 'rgba(255,255,255,0.015)' }}>
-      <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          style={{ textAlign: 'center', marginBottom: 48 }}
-        >
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#38BDF8', letterSpacing: 2, marginBottom: 10, textTransform: 'uppercase' }}>
-            Why Achswap
-          </p>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 'clamp(24px, 4vw, 32px)', letterSpacing: -0.5 }}>
-            Built different
+    <section id="features" style={{ padding: '76px 20px', background: `${C.surface}44` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <FadeUp style={{ textAlign: 'center', marginBottom: 38 }}>
+          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4 }}>
+            Why Achswap?
           </h2>
-        </motion.div>
+        </FadeUp>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }} className="features-grid">
-          {features.map((f, i) => (
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-40px' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}
+          className="feat-grid"
+        >
+          {features.map(f => (
             <motion.div
               key={f.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: i * 0.1 }}
+              variants={item}
+              whileHover={{ y: -4, transition: { type: 'spring', stiffness: 320, damping: 22 } }}
               style={{
-                padding: '24px 22px', borderRadius: 16,
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.07)',
-                transition: 'transform 0.2s, border-color 0.2s',
+                padding: '20px 18px', borderRadius: 13,
+                background: C.surface, border: `1px solid ${C.border}`,
+                cursor: 'default', transition: 'border-color .2s, box-shadow .2s',
               }}
-              whileHover={{ y: -3 }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = C.blueBorder
+                ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 28px hsla(217,91%,60%,0.07)`
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = C.border
+                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+              }}
             >
               <div style={{
-                width: 40, height: 40, borderRadius: 10, marginBottom: 14,
-                background: `${f.accent}15`,
-                border: `1px solid ${f.accent}30`,
+                width: 36, height: 36, borderRadius: 8, marginBottom: 12,
+                background: C.blueDim, border: `1px solid ${C.blueBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <f.icon size={18} color={f.accent} />
+                <f.icon size={16} color={C.blue} />
               </div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 15, marginBottom: 6, color: '#fff' }}>{f.title}</h3>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>{f.desc}</p>
+              <h3 style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 5 }}>{f.title}</h3>
+              <p style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{f.desc}</p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
 
-/* ─── MCP Section ─── */
+/* ══════════════════════════════════════════
+   MCP
+══════════════════════════════════════════ */
 function MCPSection() {
   const [copied, setCopied] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('Claude Code')
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
 
   const capabilities = [
-    { category: 'Wallet', items: ['Generate wallet', 'Get address', 'Check info'] },
-    { category: 'Balances', items: ['USDC balance', 'Any token balance', 'All balances'] },
-    { category: 'Transfers', items: ['Transfer USDC', 'Transfer ERC-20'] },
-    { category: 'Wrapping', items: ['Wrap USDC ↔ wUSDC', 'Unwrap wUSDC'] },
-    { category: 'Swaps', items: ['Exact swaps', 'USDC swaps', 'Swap quotes'] },
-    { category: 'Liquidity', items: ['Add/remove LP', 'Pool reserves', 'LP positions'] },
-    { category: 'Approvals', items: ['Token approvals'] },
+    { cat: 'Wallet',    items: ['Generate new wallet', 'Get address', 'Check wallet info'] },
+    { cat: 'Balances',  items: ['Get native USDC balance', 'Get any token balance', 'Get all token balances'] },
+    { cat: 'Transfers', items: ['Transfer USDC (native)', 'Transfer any ERC-20 token'] },
+    { cat: 'Wrapping',  items: ['Wrap native USDC ↔ wUSDC', 'Unwrap wUSDC'] },
+    { cat: 'Swaps',     items: ['Swap exact tokens for tokens', 'Swap USDC for tokens', 'Swap tokens for USDC', 'Get swap quotes'] },
+    { cat: 'Liquidity', items: ['Add liquidity', 'Remove liquidity', 'Get pool reserves', 'Check pair exists', 'Get LP position'] },
+    { cat: 'Approvals', items: ['Approve tokens for trading'] },
   ]
 
-  const configs: Record<string, { file: string; code: string }> = {
-    'Claude Code': {
-      file: '~/.claude.json',
+  const configs = [
+    {
+      name: 'Claude Code', file: '~/.claude.json',
       code: `{
   "mcpServers": {
     "achswap": {
@@ -440,8 +455,8 @@ function MCPSection() {
   }
 }`,
     },
-    'Cline': {
-      file: '.cline/mcp.json',
+    {
+      name: 'Cline', file: '.cline/mcp.json',
       code: `{
   "mcpServers": {
     "achswap": {
@@ -453,8 +468,8 @@ function MCPSection() {
   }
 }`,
     },
-    'OpenCode': {
-      file: '~/.opencode/mcp.json',
+    {
+      name: 'OpenCode', file: '~/.opencode/mcp.json',
       code: `{
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
@@ -469,276 +484,255 @@ function MCPSection() {
   }
 }`,
     },
-    'cURL': {
-      file: 'Terminal',
+    {
+      name: 'cURL', file: 'Terminal',
       code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
   -H "Content-Type: application/json" \\
   -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
-  -d '{"jsonrpc":"2.0","id":1,
-    "method":"tools/call",
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
     "params":{"name":"get_swap_quote",
       "arguments":{"amount_in":"1000000000000000000",
         "token_in":"USDC","token_out":"ACHS"}}}'`,
     },
-  }
+  ]
 
-  const handleCopy = (name: string) => {
-    navigator.clipboard.writeText(configs[name].code)
+  const copy = (code: string, name: string) => {
+    navigator.clipboard.writeText(code)
     setCopied(name)
     setTimeout(() => setCopied(null), 2000)
   }
 
   return (
-    <section id="mcp" ref={ref} style={{ padding: '80px 20px' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          style={{ textAlign: 'center', marginBottom: 48 }}
-        >
-          <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#A78BFA', letterSpacing: 2, marginBottom: 10, textTransform: 'uppercase' }}>
+    <section id="mcp" style={{ padding: '76px 20px' }}>
+      <div style={{ maxWidth: 840, margin: '0 auto' }}>
+
+        <FadeUp style={{ textAlign: 'center', marginBottom: 36 }}>
+          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4, marginBottom: 9 }}>
             MCP Server
-          </p>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 'clamp(24px, 4vw, 32px)', letterSpacing: -0.5, marginBottom: 12 }}>
-            Connect any AI agent
           </h2>
-          <p style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300, fontSize: 15, color: 'rgba(255,255,255,0.45)', maxWidth: 440, margin: '0 auto' }}>
-            Swap tokens, add liquidity, check pools — all through natural language.
+          <p style={{ fontFamily: 'Inter', fontSize: 14, color: C.muted, maxWidth: 380, margin: '0 auto' }}>
+            Connect any AI agent to Achswap. Swap tokens, add liquidity, check pools — all through natural language.
           </p>
-        </motion.div>
+        </FadeUp>
 
-        {/* Capabilities grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.15 }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10, marginBottom: 40 }}
-        >
-          {capabilities.map((cap, i) => (
-            <motion.div
-              key={cap.category}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ delay: 0.1 + i * 0.05 }}
-              style={{
-                padding: '14px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.05)',
-                border: '1px solid rgba(167,139,250,0.15)',
-              }}
-            >
-              <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 11, color: '#A78BFA', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                {cap.category}
-              </div>
-              {cap.items.map(item => (
-                <div key={item} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.8 }}>
-                  {item}
-                </div>
-              ))}
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Tabbed code block */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.3 }}
-          style={{ borderRadius: 16, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' }}
-        >
-          {/* Tab bar */}
-          <div style={{
-            display: 'flex', overflowX: 'auto',
-            background: 'rgba(255,255,255,0.03)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-          }}>
-            {Object.keys(configs).map(name => (
-              <button
-                key={name}
-                onClick={() => setActiveTab(name)}
+        {/* Capabilities */}
+        <FadeUp delay={0.05}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(126px,1fr))', gap: 8, marginBottom: 30 }}>
+            {capabilities.map((cap, i) => (
+              <motion.div
+                key={cap.cat}
+                initial={{ opacity: 0, scale: 0.94 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04, duration: 0.35 }}
                 style={{
-                  padding: '12px 18px', border: 'none', cursor: 'pointer',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: 13, whiteSpace: 'nowrap',
-                  background: activeTab === name ? 'rgba(167,139,250,0.12)' : 'transparent',
-                  color: activeTab === name ? '#A78BFA' : 'rgba(255,255,255,0.4)',
-                  borderBottom: activeTab === name ? '2px solid #A78BFA' : '2px solid transparent',
-                  transition: 'all 0.15s',
+                  padding: '11px 13px', borderRadius: 10,
+                  background: C.surface, border: `1px solid ${C.border}`,
+                  transition: 'border-color .2s',
                 }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = C.blueBorder)}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = C.border)}
               >
-                {name}
-              </button>
+                <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 10.5, color: C.blue, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                  {cap.cat}
+                </div>
+                {cap.items.map(it => (
+                  <div key={it} style={{ fontFamily: 'Inter', fontSize: 11, color: C.muted, lineHeight: 1.85 }}>• {it}</div>
+                ))}
+              </motion.div>
             ))}
           </div>
+        </FadeUp>
 
-          {/* Code area */}
-          <div style={{ position: 'relative', background: 'rgba(8,10,18,0.8)' }}>
-            <div style={{ padding: '6px 14px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>
-                {configs[activeTab].file}
-              </span>
-              <button
-                onClick={() => handleCopy(activeTab)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)',
-                  background: 'rgba(255,255,255,0.04)', cursor: 'pointer',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: 11,
-                  color: copied === activeTab ? '#4FFFB0' : 'rgba(255,255,255,0.5)',
-                  transition: 'color 0.2s',
-                }}
-              >
-                {copied === activeTab ? <Check size={12} /> : <Copy size={12} />}
-                {copied === activeTab ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <pre style={{
-              padding: '20px 22px', margin: 0, overflowX: 'auto',
-              fontFamily: 'DM Mono, monospace', fontSize: 12, lineHeight: 1.75,
-              color: 'rgba(255,255,255,0.6)',
-            }}>
-              <code>{configs[activeTab].code}</code>
-            </pre>
-          </div>
-        </motion.div>
-
-        <div style={{ textAlign: 'center', marginTop: 28 }}>
+        {/* Doc button */}
+        <FadeUp delay={0.08} style={{ textAlign: 'center', marginBottom: 24 }}>
           <a
             href="https://community.arc.network/home/forum/boards/ecosystem-showcase-and-launches-pdq/posts/achswap-v2-mcp-server-connect-any-ai-agent-to-a-dex-on-arc-testnet-qp5nh6abph"
             target="_blank" rel="noopener noreferrer"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '11px 24px', borderRadius: 10,
-              border: '1px solid rgba(167,139,250,0.3)',
-              background: 'rgba(167,139,250,0.07)',
-              color: '#A78BFA', fontFamily: 'DM Sans, sans-serif', fontWeight: 500,
-              fontSize: 13, textDecoration: 'none',
-              transition: 'background 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '9px 20px', borderRadius: 8,
+              background: C.blue, color: C.bg,
+              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
+              textDecoration: 'none',
+              boxShadow: `0 4px 16px hsla(217,91%,60%,0.3)`,
+              transition: 'opacity .2s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(167,139,250,0.12)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(167,139,250,0.07)')}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '.86')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
-            Full Documentation <ArrowRight size={14} />
+            Full Documentation <ExternalLink size={12} />
           </a>
-        </div>
+        </FadeUp>
+
+        {/* Config cards */}
+        <FadeUp delay={0.1}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }} className="cfg-grid">
+            {configs.map(cfg => (
+              <div key={cfg.name} style={{
+                borderRadius: 12, background: C.surface,
+                border: `1px solid ${C.border}`, overflow: 'hidden',
+              }}>
+                {/* card header */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '9px 13px', borderBottom: `1px solid ${C.border}`,
+                  background: C.surface2,
+                }}>
+                  <div>
+                    <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 12.5, color: '#fff' }}>{cfg.name}</div>
+                    <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: C.muted, marginTop: 1 }}>{cfg.file}</div>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.88 }}
+                    onClick={() => copy(cfg.code, cfg.name)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '4px 9px', borderRadius: 5,
+                      border: `1px solid ${C.border}`, background: C.bg,
+                      cursor: 'pointer', fontFamily: 'Inter', fontSize: 11, fontWeight: 500,
+                      color: copied === cfg.name ? '#4ade80' : C.muted,
+                      transition: 'color .2s',
+                    }}
+                  >
+                    <AnimatePresence mode="wait">
+                      {copied === cfg.name
+                        ? <motion.span key="y" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}><Check size={10} /></motion.span>
+                        : <motion.span key="n" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}><Copy size={10} /></motion.span>
+                      }
+                    </AnimatePresence>
+                    {copied === cfg.name ? 'Copied!' : 'Copy'}
+                  </motion.button>
+                </div>
+                {/* code */}
+                <pre style={{
+                  padding: '13px', margin: 0, overflowX: 'auto', maxHeight: 138,
+                  fontFamily: '"Fira Code","Cascadia Code","Courier New",monospace',
+                  fontSize: 10.5, lineHeight: 1.72,
+                  color: C.muted, background: `${C.bg}cc`,
+                }}>
+                  <code>{cfg.code}</code>
+                </pre>
+              </div>
+            ))}
+          </div>
+        </FadeUp>
       </div>
     </section>
   )
 }
 
-/* ─── CTA ─── */
+/* ══════════════════════════════════════════
+   CTA
+══════════════════════════════════════════ */
 function CTA() {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-
   return (
-    <section ref={ref} style={{ padding: '80px 20px' }}>
-      <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={inView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.6 }}
-          style={{
-            padding: 'clamp(36px, 6vw, 60px) clamp(24px, 5vw, 60px)',
-            borderRadius: 24, textAlign: 'center',
-            background: 'linear-gradient(135deg, rgba(79,255,176,0.08) 0%, rgba(56,189,248,0.06) 100%)',
-            border: '1px solid rgba(79,255,176,0.15)',
+    <section style={{ padding: '76px 20px' }}>
+      <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <FadeUp>
+          <div style={{
+            padding: 'clamp(34px, 5vw, 52px) clamp(22px, 5vw, 52px)',
+            borderRadius: 18, textAlign: 'center',
+            background: C.surface,
+            border: `1px solid ${C.blueBorder}`,
+            boxShadow: `0 0 60px hsla(217,91%,60%,0.07)`,
             position: 'relative', overflow: 'hidden',
-          }}
-        >
-          {/* Glow */}
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(79,255,176,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 'clamp(24px, 4vw, 36px)', letterSpacing: -0.8, marginBottom: 12, position: 'relative' }}>
-            Ready to swap?
-          </h2>
-          <p style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300, fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 28, position: 'relative' }}>
-            Connect your wallet and start trading on the fastest DEX on ARC Network.
-          </p>
-          <a href="https://app.achswapfi.xyz" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 10,
-            padding: '14px 32px', borderRadius: 12,
-            background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-            color: '#080A12', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
-            fontSize: 15, textDecoration: 'none',
-            boxShadow: '0 0 40px rgba(79,255,176,0.25)',
-            position: 'relative',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-          }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 0 60px rgba(79,255,176,0.4)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 40px rgba(79,255,176,0.25)' }}
-          >
-            <Wallet size={18} /> Connect Wallet
-          </a>
-        </motion.div>
+          }}>
+            {/* top glow */}
+            <div style={{
+              position: 'absolute', top: -90, left: '50%', transform: 'translateX(-50%)',
+              width: 360, height: 200, borderRadius: '50%',
+              background: `radial-gradient(circle, hsla(217,91%,60%,0.11) 0%, transparent 70%)`,
+              pointerEvents: 'none',
+            }} />
+            <h2 style={{
+              fontFamily: 'Inter', fontWeight: 800,
+              fontSize: 'clamp(21px, 4vw, 30px)', letterSpacing: -0.6,
+              marginBottom: 9, position: 'relative',
+            }}>Ready to swap?</h2>
+            <p style={{
+              fontFamily: 'Inter', fontSize: 14, color: C.muted,
+              marginBottom: 26, lineHeight: 1.65, position: 'relative',
+            }}>
+              Connect your wallet and start trading on the fastest DEX on ARC Network.
+            </p>
+            <a href="https://app.achswapfi.xyz" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '13px 28px', borderRadius: 9,
+              background: C.blue, color: C.bg,
+              fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
+              textDecoration: 'none', position: 'relative',
+              boxShadow: `0 4px 22px ${C.blueGlow}`,
+              transition: 'transform .2s, box-shadow .2s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 34px hsla(217,91%,60%,0.5)` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 22px ${C.blueGlow}` }}
+            >
+              <Wallet size={16} /> Connect Wallet
+            </a>
+          </div>
+        </FadeUp>
       </div>
     </section>
   )
 }
 
-/* ─── Footer ─── */
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
 function Footer() {
   return (
-    <footer style={{ padding: '28px 20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ maxWidth: 1120, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: 7,
-            background: 'linear-gradient(135deg, #4FFFB0 0%, #38BDF8 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, fontWeight: 800, color: '#080A12', fontFamily: 'Syne, sans-serif',
-          }}>A</div>
-          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>Achswap</span>
-        </div>
-
-        <div style={{ display: 'flex', gap: 24 }}>
+    <footer style={{ padding: '22px 20px', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <img src="/img/logos/achswap-logo.png" alt="Achswap" style={{ width: 22, height: 22, borderRadius: 6 }} />
+          <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13.5, color: C.muted }}>Achswap</span>
+        </a>
+        <div style={{ display: 'flex', gap: 20 }}>
           {['Twitter', 'Discord', 'Telegram', 'GitHub'].map(l => (
-            <a key={l} href="#" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+            <a key={l} href="#" style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, textDecoration: 'none', transition: 'color .2s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
             >{l}</a>
           ))}
         </div>
-
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: 'rgba(255,255,255,0.25)', letterSpacing: 0.3 }}>
-          © 2026 Achswap
-        </p>
+        <p style={{ fontFamily: 'Inter', fontSize: 12, color: 'hsl(215 20% 38%)' }}>© 2026 Achswap</p>
       </div>
     </footer>
   )
 }
 
-/* ─── Root ─── */
+/* ══════════════════════════════════════════
+   ROOT
+══════════════════════════════════════════ */
 export default function App() {
   return (
     <>
-      <style>{fontStyle}</style>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body { background: #080A12; color: #fff; min-height: 100vh; }
+        body { background: ${C.bg}; color: #fff; min-height: 100vh; -webkit-font-smoothing: antialiased; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #080A12; }
-        ::-webkit-scrollbar-thumb { background: #4FFFB0; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: ${C.bg}; }
+        ::-webkit-scrollbar-thumb { background: ${C.blue}; border-radius: 3px; }
 
         @media (min-width: 640px) {
-          .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .features-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .desktop-nav { display: flex !important; }
-          .mobile-nav-btn { display: none !important; }
+          .dn-links { display: flex !important; }
+          .mn-btn   { display: none !important; }
+          .stats-grid { grid-template-columns: repeat(4,1fr) !important; }
+          .feat-grid  { grid-template-columns: repeat(4,1fr) !important; }
+          .cfg-grid   { grid-template-columns: repeat(2,1fr) !important; }
         }
-
         @media (max-width: 639px) {
-          .desktop-nav { display: none !important; }
-          .mobile-nav-btn { display: flex !important; }
+          .dn-links { display: none !important; }
+          .mn-btn   { display: flex !important; }
+          .cfg-grid { grid-template-columns: 1fr !important; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
-          }
+          *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
       `}</style>
-      <div style={{ minHeight: '100vh', background: '#080A12', color: '#fff' }}>
+      <div style={{ minHeight: '100vh', background: C.bg, color: '#fff' }}>
         <Navbar />
         <Hero />
         <Stats />
