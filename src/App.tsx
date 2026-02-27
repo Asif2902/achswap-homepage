@@ -204,6 +204,16 @@ function Features() {
 function MCPSection() {
   const [copied, setCopied] = useState<string | null>(null)
   
+  const capabilities = [
+    { category: 'Wallet', items: ['Generate new wallet', 'Get address', 'Check wallet info'] },
+    { category: 'Balances', items: ['Get native USDC balance', 'Get any token balance', 'Get all token balances'] },
+    { category: 'Transfers', items: ['Transfer USDC (native)', 'Transfer any ERC-20 token'] },
+    { category: 'Wrapping', items: ['Wrap native USDC ↔ wUSDC', 'Unwrap wUSDC'] },
+    { category: 'Swaps', items: ['Swap exact tokens for tokens', 'Swap USDC for tokens', 'Swap tokens for USDC', 'Get swap quotes'] },
+    { category: 'Liquidity', items: ['Add liquidity', 'Remove liquidity', 'Get pool reserves', 'Check pair exists', 'Get LP position'] },
+    { category: 'Approvals', items: ['Approve tokens for trading'] },
+  ]
+
   const configs = [
     {
       name: 'Claude Code',
@@ -273,6 +283,19 @@ function MCPSection() {
         <p className="text-[hsl(215_20%_70%)] text-center mb-6 max-w-xl mx-auto text-sm md:text-base">
           Connect any AI agent to Achswap. Swap tokens, add liquidity, check pools — all through natural language.
         </p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          {capabilities.map((cap) => (
+            <div key={cap.category} className="p-3 rounded-lg bg-[hsl(220_25%_10%)] border border-[hsl(217_33%_15%)]">
+              <h3 className="font-semibold text-sm mb-2 text-[hsl(217_91%_60%)]">{cap.category}</h3>
+              <ul className="text-xs text-[hsl(215_20%_70%)] space-y-1">
+                {cap.items.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
         
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           <a
