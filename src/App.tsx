@@ -101,6 +101,26 @@ function Navbar() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <a href="https://docs.achswap.app" className="dn-links" style={{
+              padding: '8px 16px', borderRadius: 8,
+              background: C.surface,               color: '#fff',
+              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
+              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s', border: `1px solid ${C.border}`,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '.88' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            >Documentation</a>
+
+            <a href="https://prediction.achswap.app" className="dn-links" style={{
+              padding: '8px 16px', borderRadius: 8,
+              background: C.surface,               color: '#fff',
+              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
+              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s', border: `1px solid ${C.border}`,
+            }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '.88' }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            >AchMarket</a>
+
             <a href="https://trade.achswap.app" className="dn-links" style={{
               padding: '8px 16px', borderRadius: 8,
               background: C.blue, color: C.bg,
@@ -447,7 +467,7 @@ function MCPSection() {
       code: `{
   "mcpServers": {
     "achswap": {
-      "url": "https://api.achswap.app/mcp/message",
+      "url": "https://api.achswapfi.xyz/mcp/message",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       }
@@ -460,7 +480,7 @@ function MCPSection() {
       code: `{
   "mcpServers": {
     "achswap": {
-      "url": "https://api.achswap.app/mcp/message",
+      "url": "https://api.achswapfi.xyz/mcp/message",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       }
@@ -475,7 +495,7 @@ function MCPSection() {
   "mcp": {
     "achswap": {
       "type": "remote",
-      "url": "https://api.achswap.app/mcp",
+      "url": "https://api.achswapfi.xyz/mcp",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       },
@@ -486,7 +506,7 @@ function MCPSection() {
     },
     {
       name: 'cURL', file: 'Terminal',
-      code: `curl -X POST https://api.achswap.app/mcp/message \\
+      code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
   -H "Content-Type: application/json" \\
   -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
