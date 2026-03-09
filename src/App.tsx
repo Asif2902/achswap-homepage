@@ -101,7 +101,7 @@ function Navbar() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <a href="https://app.achswapfi.xyz" className="dn-links" style={{
+            <a href="https://trade.achswap.app" className="dn-links" style={{
               padding: '8px 16px', borderRadius: 8,
               background: C.blue, color: C.bg,
               fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
@@ -136,7 +136,7 @@ function Navbar() {
                     style={{ padding: '10px 2px', fontFamily: 'Inter', fontSize: 14, color: C.muted, textDecoration: 'none' }}
                   >{l}</a>
                 ))}
-                <a href="https://app.achswapfi.xyz" style={{
+                <a href="https://trade.achswap.app" style={{
                   marginTop: 8, padding: '12px', borderRadius: 9, textAlign: 'center',
                   background: C.blue, color: C.bg,
                   fontFamily: 'Inter', fontWeight: 600, fontSize: 14, textDecoration: 'none',
@@ -245,7 +245,7 @@ function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
           >
-            <a href="https://app.achswapfi.xyz" style={{
+            <a href="https://trade.achswap.app" style={{
               display: 'inline-flex', alignItems: 'center', gap: 7,
               padding: '12px 24px', borderRadius: 9,
               background: C.blue, color: C.bg,
@@ -447,7 +447,7 @@ function MCPSection() {
       code: `{
   "mcpServers": {
     "achswap": {
-      "url": "https://api.achswapfi.xyz/mcp/message",
+      "url": "https://api.achswap.app/mcp/message",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       }
@@ -460,7 +460,7 @@ function MCPSection() {
       code: `{
   "mcpServers": {
     "achswap": {
-      "url": "https://api.achswapfi.xyz/mcp/message",
+      "url": "https://api.achswap.app/mcp/message",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       }
@@ -475,7 +475,7 @@ function MCPSection() {
   "mcp": {
     "achswap": {
       "type": "remote",
-      "url": "https://api.achswapfi.xyz/mcp",
+      "url": "https://api.achswap.app/mcp",
       "headers": {
         "X-Private-Key": "0xYOUR_PRIVATE_KEY"
       },
@@ -486,7 +486,7 @@ function MCPSection() {
     },
     {
       name: 'cURL', file: 'Terminal',
-      code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
+      code: `curl -X POST https://api.achswap.app/mcp/message \\
   -H "Content-Type: application/json" \\
   -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
@@ -656,7 +656,7 @@ function CTA() {
             }}>
               Connect your wallet and start trading on the fastest DEX on ARC Network.
             </p>
-            <a href="https://app.achswapfi.xyz" style={{
+            <a href="https://trade.achswap.app" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '13px 28px', borderRadius: 9,
               background: C.blue, color: C.bg,
