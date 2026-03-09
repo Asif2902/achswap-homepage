@@ -92,7 +92,7 @@ function Navbar() {
 
           {/* Desktop nav */}
           <div className="dn-links" style={{ display: 'flex', gap: 26 }}>
-            {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', '#docs']].map(([l, h]) => (
+                {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', 'https://docs.achswap.app']].map(([l, h]) => (
               <a key={l} href={h} style={{ fontFamily: 'Inter', fontSize: 13.5, color: C.muted, textDecoration: 'none', transition: 'color .2s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
                 onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
@@ -151,7 +151,7 @@ function Navbar() {
               style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}` }}
             >
               <div style={{ padding: '12px 0 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', '#docs']].map(([l, h]) => (
+{[['Features', '#features'], ['MCP', '#mcp'], ['Docs', 'https://docs.achswap.app']].map(([l, h]) => (
                   <a key={l} href={h} onClick={() => setOpen(false)}
                     style={{ padding: '10px 2px', fontFamily: 'Inter', fontSize: 14, color: C.muted, textDecoration: 'none' }}
                   >{l}</a>
@@ -570,7 +570,7 @@ function MCPSection() {
         {/* Doc button */}
         <FadeUp delay={0.08} style={{ textAlign: 'center', marginBottom: 24 }}>
           <a
-            href="https://docs.achswap.com/technical/mcp"
+            href="https://docs.achswap.app/technical/mcp"
             target="_blank" rel="noopener noreferrer"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
