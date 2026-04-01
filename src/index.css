@@ -9,18 +9,18 @@
   --surface-0: rgba(10, 17, 28, 0.8);
   --surface-1: rgba(12, 22, 36, 0.92);
   --surface-2: rgba(18, 30, 47, 0.98);
-  --line-strong: rgba(90, 137, 191, 0.28);
-  --line-soft: rgba(93, 126, 160, 0.2);
+  --line-strong: rgba(98, 146, 210, 0.34);
+  --line-soft: rgba(95, 138, 197, 0.24);
   --text-main: #eaf1fb;
   --text-body: #b4c2d6;
   --text-soft: #8d9fb5;
-  --accent: #52d9be;
-  --accent-strong: #82f4dd;
+  --accent: #4d9dff;
+  --accent-strong: #7cb8ff;
   --danger: #f77474;
   --radius-xl: 26px;
   --radius-md: 14px;
   --shadow-soft: 0 22px 45px rgba(2, 9, 17, 0.45);
-  --shadow-accent: 0 14px 34px rgba(82, 217, 190, 0.22);
+  --shadow-accent: 0 14px 34px rgba(77, 157, 255, 0.25);
 }
 
 * {
@@ -36,8 +36,8 @@ html {
 body {
   font-family: 'Space Grotesk', sans-serif;
   background:
-    radial-gradient(circle at 8% -10%, rgba(71, 145, 220, 0.14) 0%, transparent 43%),
-    radial-gradient(circle at 88% 5%, rgba(88, 190, 213, 0.14) 0%, transparent 38%),
+    radial-gradient(circle at 8% -10%, rgba(76, 131, 223, 0.18) 0%, transparent 43%),
+    radial-gradient(circle at 88% 5%, rgba(76, 157, 255, 0.18) 0%, transparent 38%),
     linear-gradient(160deg, #04070d 0%, #070d17 44%, #050a13 100%);
   color: var(--text-main);
   min-height: 100vh;
@@ -166,12 +166,12 @@ ul {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-strong) 0%, var(--accent) 80%);
-  color: #06201d;
+  color: #061527;
   box-shadow: var(--shadow-accent);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #92f6e1 0%, #5be0c5 82%);
+  background: linear-gradient(135deg, #96c9ff 0%, #5ea5ff 82%);
 }
 
 .btn-muted {
@@ -216,7 +216,7 @@ ul {
   display: inline-flex;
   justify-content: center;
   background: linear-gradient(135deg, var(--accent-strong) 0%, var(--accent) 82%);
-  color: #07231f;
+  color: #071a31;
   border-radius: 10px;
   font-weight: 700;
   padding: 0.72rem 0.9rem;
@@ -375,7 +375,7 @@ ul {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
-  border: 1px solid rgba(82, 217, 190, 0.3);
+  border: 1px solid rgba(77, 157, 255, 0.36);
   border-radius: 999px;
   padding: 0.18rem 0.56rem;
   font-weight: 700;
