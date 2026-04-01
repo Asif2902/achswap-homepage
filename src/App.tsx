@@ -1,473 +1,131 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Zap, Shield, Layers, TrendingUp, Menu, X, Wallet, Copy, Check, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowRight, Check, Copy, ExternalLink, Layers, Menu, Shield, TrendingUp, X, Zap } from 'lucide-react'
 
-/* ── palette (original blue, kept exactly) ── */
-const C = {
-  blue:       'hsl(217 91% 60%)',
-  blueDim:    'hsla(217,91%,60%,0.1)',
-  blueBorder: 'hsla(217,91%,60%,0.22)',
-  blueGlow:   'hsla(217,91%,60%,0.35)',
-  bg:         'hsl(220 25% 8%)',
-  surface:    'hsl(220 25% 10%)',
-  surface2:   'hsl(220 25% 12%)',
-  border:     'hsl(217 33% 15%)',
-  muted:      'hsl(215 20% 60%)',
+type NavLink = {
+  label: string
+  href: string
+  external?: boolean
 }
 
-const tokens = [
-  { symbol: 'USDC',  name: 'USD Coin',      price: '$1.00',  change: '+0.01%', img: '/img/usdc.webp' },
-  { symbol: 'wUSDC', name: 'Wrapped USDC',  price: '$1.00',  change: '+0.02%', img: '/img/logos/wusdc.png' },
-  { symbol: 'ACHS',  name: 'Achswap Token', price: '$0.014', change: '+12.5%', img: '/img/logos/achs-token.png' },
+type Product = {
+  name: string
+  href: string
+  badge: string
+  description: string
+  bullets: string[]
+}
+
+type Capability = {
+  category: string
+  items: string[]
+}
+
+type McpSnippet = {
+  name: string
+  path: string
+  code: string
+}
+
+type McpCall = {
+  title: string
+  code: string
+}
+
+const navLinks: NavLink[] = [
+  { label: 'Ecosystem', href: '#ecosystem' },
+  { label: 'Infrastructure', href: '#infrastructure' },
+  { label: 'MCP', href: '#mcp' },
+  { label: 'Docs', href: 'https://docs.achswap.app', external: true },
+  { label: 'Twitter', href: 'https://x.com/AchPredict', external: true },
 ]
 
-const features = [
-  { icon: Zap,        title: 'Lightning Fast', desc: 'Sub-second transactions on ARC Network' },
-  { icon: Shield,     title: 'Secure',         desc: 'Battle-tested smart contracts' },
-  { icon: Layers,     title: 'V2 & V3',        desc: 'Concentrated liquidity pools' },
-  { icon: TrendingUp, title: 'Best Rates',      desc: 'Smart routing for optimal swaps' },
+const ecosystemProducts: Product[] = [
+  {
+    name: 'AchSwap (DEX)',
+    href: 'https://trade.achswap.app',
+    badge: 'Core Trading',
+    description: 'A performance-first exchange built for both first-time and advanced users.',
+    bullets: [
+      'AMM + CLMM architecture',
+      'Beginner UI + Pro liquidity mode',
+      'Gasless swaps for seamless trading',
+    ],
+  },
+  {
+    name: 'Token Launch',
+    href: 'https://trade.achswap.app/launch',
+    badge: 'Creator Tools',
+    description: 'Launch and list community tokens without waiting on centralized gatekeepers.',
+    bullets: [
+      'Create and launch a token instantly',
+      'Add $500 liquidity at launch',
+      'Auto-listed under Community Tokens',
+    ],
+  },
+  {
+    name: 'Bridge (CCTP v2)',
+    href: 'https://trade.achswap.app/bridge',
+    badge: 'Cross-Chain',
+    description: 'Move value across chains with production-grade infrastructure from Circle.',
+    bullets: [
+      'Cross-chain transfers across 9 chains',
+      'Powered by Circle CCTP v2',
+      'Built into the same AchSwap app flow',
+    ],
+  },
+  {
+    name: 'AchMarket (Prediction Market)',
+    href: 'https://prediction.achswap.app',
+    badge: 'Market Layer',
+    description: 'A decentralized market engine for real-time sentiment and probability.',
+    bullets: [
+      'LMSR-based pricing model',
+      'Fully decentralized prediction markets',
+      'Designed for transparent market resolution',
+    ],
+  },
 ]
 
-const stats = [
-  { value: '$192K',  label: 'Total Value Locked' },
-  { value: '2.5K',   label: 'Transactions' },
-  { value: '100+',   label: 'Active Users' },
-  { value: '$0.014', label: 'ACHS Price' },
+const infrastructureProducts: Product[] = [
+  {
+    name: 'Swap API & Smart Adaptor',
+    href: 'https://docs.achswap.app/achswap/adapter',
+    badge: 'Developer Infra',
+    description: 'Routing and execution primitives for wallets, bots, and full-stack products.',
+    bullets: [
+      'Best execution price selection',
+      'Split routes + multi-hop support',
+      'Use via API or direct on-chain integration',
+    ],
+  },
+  {
+    name: 'MCP Server (AI-Native DEX Layer)',
+    href: 'https://docs.achswap.app/technical/mcp',
+    badge: 'AI Integration',
+    description: 'A programmable DeFi interface that lets AI agents execute real actions.',
+    bullets: [
+      'Swap tokens, add and remove liquidity',
+      'Launch tokens directly through AI workflows',
+      'Designed for AI-first automation systems',
+    ],
+  },
 ]
 
-/* ── stagger children helper ── */
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-}
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
-}
+const capabilities: Capability[] = [
+  { category: 'Wallet', items: ['Generate wallet', 'Get wallet address', 'Check wallet info'] },
+  { category: 'Balances', items: ['Get native USDC', 'Get token balances', 'Read portfolio balances'] },
+  { category: 'Transfers', items: ['Transfer USDC', 'Transfer ERC-20 tokens'] },
+  { category: 'Swaps', items: ['Get swap quote', 'Swap exact tokens', 'USDC pair swaps'] },
+  { category: 'Liquidity', items: ['Add liquidity', 'Remove liquidity', 'Read pool reserves'] },
+  { category: 'Approvals', items: ['Approve trading allowance', 'Check token approvals'] },
+]
 
-/* ── Fade-up used on sections ── */
-function FadeUp({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay }}
-      style={style}
-    >
-      {children}
-    </motion.div>
-  )
-}
-
-/* ══════════════════════════════════════════
-   NAVBAR
-══════════════════════════════════════════ */
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', fn)
-    return () => window.removeEventListener('scroll', fn)
-  }, [])
-
-  return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      transition: 'all 0.25s',
-      background: scrolled ? 'hsla(220,25%,8%,0.88)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(18px) saturate(150%)' : 'none',
-      borderBottom: `1px solid ${scrolled ? C.border : 'transparent'}`,
-    }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 62 }}>
-
-          {/* Logo */}
-          <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
-            <img src="/img/logos/achswap-logo.png" alt="Achswap" style={{ width: 30, height: 30, borderRadius: 8 }} />
-            <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 15, color: '#fff' }}>Achswap</span>
-          </a>
-
-          {/* Desktop nav */}
-          <div className="dn-links" style={{ display: 'flex', gap: 26 }}>
-                {[['Features', '#features'], ['MCP', '#mcp'], ['Docs', 'https://docs.achswap.app']].map(([l, h]) => (
-              <a key={l} href={h} style={{ fontFamily: 'Inter', fontSize: 13.5, color: C.muted, textDecoration: 'none', transition: 'color .2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
-              >{l}</a>
-            ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <a href="https://docs.achswap.app" className="dn-links" style={{
-              padding: '8px 16px', borderRadius: 8,
-              background: C.surface,               color: '#fff',
-              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
-              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s', border: `1px solid ${C.border}`,
-            }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '.88' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >Documentation</a>
-
-            <a href="https://prediction.achswap.app" className="dn-links" style={{
-              padding: '8px 16px', borderRadius: 8,
-              background: C.surface,               color: '#fff',
-              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
-              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s', border: `1px solid ${C.border}`,
-            }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '.88' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >AchMarket</a>
-
-            <a href="https://trade.achswap.app" className="dn-links" style={{
-              padding: '8px 16px', borderRadius: 8,
-              background: C.blue, color: C.bg,
-              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
-              textDecoration: 'none', transition: 'opacity .2s, box-shadow .2s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.opacity = '.88'; e.currentTarget.style.boxShadow = `0 0 20px ${C.blueGlow}` }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = 'none' }}
-            >Launch App</a>
-
-            <button className="mn-btn" onClick={() => setOpen(o => !o)} style={{
-              display: 'none', background: C.surface, border: `1px solid ${C.border}`,
-              borderRadius: 8, padding: 7, color: C.muted, cursor: 'pointer', lineHeight: 0,
-            }}>
-              {open ? <X size={17} /> : <Menu size={17} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile drawer */}
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              key="drawer"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}` }}
-            >
-              <div style={{ padding: '12px 0 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-{[['Features', '#features'], ['MCP', '#mcp'], ['Docs', 'https://docs.achswap.app']].map(([l, h]) => (
-                  <a key={l} href={h} onClick={() => setOpen(false)}
-                    style={{ padding: '10px 2px', fontFamily: 'Inter', fontSize: 14, color: C.muted, textDecoration: 'none' }}
-                  >{l}</a>
-                ))}
-                <a href="https://prediction.achswap.app" onClick={() => setOpen(false)} style={{
-                  padding: '10px 2px', fontFamily: 'Inter', fontSize: 14, color: C.muted, textDecoration: 'none'
-                }}>AchMarket</a>
-                <a href="https://trade.achswap.app" style={{
-                  marginTop: 8, padding: '12px', borderRadius: 9, textAlign: 'center',
-                  background: C.blue, color: C.bg,
-                  fontFamily: 'Inter', fontWeight: 600, fontSize: 14, textDecoration: 'none',
-                }}>Launch App</a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </nav>
-  )
-}
-
-/* ══════════════════════════════════════════
-   HERO
-══════════════════════════════════════════ */
-function Hero() {
-  const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '22%'])
-  const bgO = useTransform(scrollYProgress, [0, 0.75], [1, 0])
-
-  return (
-    <section ref={ref} style={{
-      position: 'relative', minHeight: '100svh',
-      display: 'flex', alignItems: 'center',
-      overflow: 'hidden', paddingTop: 62,
-    }}>
-      {/* Background: parallax glow + dot grid */}
-      <motion.div style={{ position: 'absolute', inset: 0, y: bgY, opacity: bgO, pointerEvents: 'none', zIndex: 0 }}>
-        {/* central glow */}
-        <div style={{
-          position: 'absolute', top: '38%', left: '50%',
-          transform: 'translate(-50%,-50%)',
-          width: 680, height: 680, borderRadius: '50%',
-          background: `radial-gradient(circle, hsla(217,91%,60%,0.13) 0%, transparent 68%)`,
-        }} />
-        {/* dot grid with vignette */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `radial-gradient(circle, hsla(215,20%,65%,0.18) 1px, transparent 1px)`,
-          backgroundSize: '28px 28px',
-          maskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 100%)',
-        }} />
-      </motion.div>
-
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 20px', width: '100%' }}>
-        <div style={{ textAlign: 'center', maxWidth: 660, margin: '0 auto' }}>
-
-          {/* Live badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            style={{ display: 'inline-flex', marginBottom: 22 }}
-          >
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '5px 13px 5px 9px', borderRadius: 99,
-              background: C.blueDim, border: `1px solid ${C.blueBorder}`,
-              fontFamily: 'Inter', fontSize: 12, color: C.blue, fontWeight: 500,
-            }}>
-              <motion.span
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-                style={{ width: 6, height: 6, borderRadius: '50%', background: C.blue, display: 'block', flexShrink: 0 }}
-              />
-              Live on ARC Testnet
-            </span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-            style={{
-              fontFamily: 'Inter, sans-serif', fontWeight: 800,
-              fontSize: 'clamp(34px, 7.5vw, 66px)', lineHeight: 1.08,
-              letterSpacing: -1.5, color: '#fff', marginBottom: 16,
-            }}
-          >
-            Swap tokens at<br />
-            <span style={{ color: C.blue }}>the best rates</span>
-          </motion.h1>
-
-          {/* Sub */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.2 }}
-            style={{
-              fontFamily: 'Inter', fontSize: 'clamp(14px, 2.2vw, 16.5px)',
-              color: C.muted, lineHeight: 1.7,
-              maxWidth: 420, margin: '0 auto 30px',
-            }}
-          >
-            The decentralized exchange built for speed, security, and optimal swap rates on ARC Network.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}
-          >
-            <a href="https://trade.achswap.app" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '12px 24px', borderRadius: 9,
-              background: C.blue, color: C.bg,
-              fontFamily: 'Inter', fontWeight: 600, fontSize: 14,
-              textDecoration: 'none',
-              boxShadow: `0 4px 22px ${C.blueGlow}`,
-              transition: 'transform .2s, box-shadow .2s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 34px hsla(217,91%,60%,0.5)` }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 22px ${C.blueGlow}` }}
-            >
-              Launch App <ArrowRight size={14} />
-            </a>
-            <a href="#features" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              padding: '12px 24px', borderRadius: 9,
-              border: `1px solid ${C.border}`, background: C.surface,
-              color: C.muted, fontFamily: 'Inter', fontWeight: 500, fontSize: 14,
-              textDecoration: 'none', transition: 'border-color .2s, color .2s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.blueBorder; e.currentTarget.style.color = '#fff' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted }}
-            >
-              Learn More
-            </a>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════
-   STATS
-══════════════════════════════════════════ */
-function Stats() {
-  return (
-    <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '44px 20px' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-40px' }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '32px 16px' }}
-          className="stats-grid"
-        >
-          {stats.map(s => (
-            <motion.div key={s.label} variants={item} style={{ textAlign: 'center' }}>
-              <div style={{
-                fontFamily: 'Inter', fontWeight: 800,
-                fontSize: 'clamp(24px, 4vw, 32px)', letterSpacing: -0.8,
-                color: C.blue,
-              }}>{s.value}</div>
-              <div style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, marginTop: 4 }}>{s.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════
-   TOKENS
-══════════════════════════════════════════ */
-function Tokens() {
-  return (
-    <section style={{ padding: '76px 20px' }}>
-      <div style={{ maxWidth: 540, margin: '0 auto' }}>
-        <FadeUp style={{ textAlign: 'center', marginBottom: 26 }}>
-          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4 }}>
-            Trending Tokens
-          </h2>
-        </FadeUp>
-
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-40px' }}
-          style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-        >
-          {tokens.map(t => (
-            <motion.div
-              key={t.symbol}
-              variants={item}
-              whileHover={{ x: 5, transition: { type: 'spring', stiffness: 380, damping: 26 } }}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '13px 17px', borderRadius: 12,
-                background: C.surface, border: `1px solid ${C.border}`,
-                cursor: 'default', transition: 'border-color .2s, box-shadow .2s',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = C.blueBorder
-                ;(e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 0 1px ${C.blueBorder}`
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = C.border
-                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <img src={t.img} alt={t.symbol} style={{ width: 38, height: 38, borderRadius: '50%' }} />
-                <div>
-                  <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff' }}>{t.symbol}</div>
-                  <div style={{ fontFamily: 'Inter', fontSize: 11.5, color: C.muted, marginTop: 1 }}>{t.name}</div>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff' }}>{t.price}</div>
-                <div style={{ fontFamily: 'Inter', fontSize: 11.5, color: '#4ade80', marginTop: 1 }}>{t.change}</div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════
-   FEATURES
-══════════════════════════════════════════ */
-function Features() {
-  return (
-    <section id="features" style={{ padding: '76px 20px', background: `${C.surface}44` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <FadeUp style={{ textAlign: 'center', marginBottom: 38 }}>
-          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4 }}>
-            Why Achswap?
-          </h2>
-        </FadeUp>
-
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-40px' }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}
-          className="feat-grid"
-        >
-          {features.map(f => (
-            <motion.div
-              key={f.title}
-              variants={item}
-              whileHover={{ y: -4, transition: { type: 'spring', stiffness: 320, damping: 22 } }}
-              style={{
-                padding: '20px 18px', borderRadius: 13,
-                background: C.surface, border: `1px solid ${C.border}`,
-                cursor: 'default', transition: 'border-color .2s, box-shadow .2s',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = C.blueBorder
-                ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 28px hsla(217,91%,60%,0.07)`
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = C.border
-                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-              }}
-            >
-              <div style={{
-                width: 36, height: 36, borderRadius: 8, marginBottom: 12,
-                background: C.blueDim, border: `1px solid ${C.blueBorder}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <f.icon size={16} color={C.blue} />
-              </div>
-              <h3 style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 14, color: '#fff', marginBottom: 5 }}>{f.title}</h3>
-              <p style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{f.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════
-   MCP
-══════════════════════════════════════════ */
-function MCPSection() {
-  const [copied, setCopied] = useState<string | null>(null)
-
-  const capabilities = [
-    { cat: 'Wallet',    items: ['Generate new wallet', 'Get address', 'Check wallet info'] },
-    { cat: 'Balances',  items: ['Get native USDC balance', 'Get any token balance', 'Get all token balances'] },
-    { cat: 'Transfers', items: ['Transfer USDC (native)', 'Transfer any ERC-20 token'] },
-    { cat: 'Wrapping',  items: ['Wrap native USDC ↔ wUSDC', 'Unwrap wUSDC'] },
-    { cat: 'Swaps',     items: ['Swap exact tokens for tokens', 'Swap USDC for tokens', 'Swap tokens for USDC', 'Get swap quotes'] },
-    { cat: 'Liquidity', items: ['Add liquidity', 'Remove liquidity', 'Get pool reserves', 'Check pair exists', 'Get LP position'] },
-    { cat: 'Approvals', items: ['Approve tokens for trading'] },
-  ]
-
-  const configs = [
-    {
-      name: 'Claude Code', file: '~/.claude.json',
-      code: `{
+const mcpSnippets: McpSnippet[] = [
+  {
+    name: 'Claude Code',
+    path: '~/.claude.json',
+    code: `{
   "mcpServers": {
     "achswap": {
       "url": "https://api.achswapfi.xyz/mcp/message",
@@ -477,10 +135,11 @@ function MCPSection() {
     }
   }
 }`,
-    },
-    {
-      name: 'Cline', file: '.cline/mcp.json',
-      code: `{
+  },
+  {
+    name: 'Cline',
+    path: '.cline/mcp.json',
+    code: `{
   "mcpServers": {
     "achswap": {
       "url": "https://api.achswapfi.xyz/mcp/message",
@@ -490,10 +149,11 @@ function MCPSection() {
     }
   }
 }`,
-    },
-    {
-      name: 'OpenCode', file: '~/.opencode/mcp.json',
-      code: `{
+  },
+  {
+    name: 'OpenCode',
+    path: '~/.opencode/mcp.json',
+    code: `{
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "achswap": {
@@ -506,265 +166,436 @@ function MCPSection() {
     }
   }
 }`,
-    },
-    {
-      name: 'cURL', file: 'Terminal',
-      code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
+  },
+  {
+    name: 'cURL',
+    path: 'Terminal',
+    code: `curl -X POST https://api.achswapfi.xyz/mcp/message \\
   -H "Content-Type: application/json" \\
   -H "X-Private-Key: 0xYOUR_PRIVATE_KEY" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
     "params":{"name":"get_swap_quote",
-      "arguments":{"amount_in":"1000000000000000000",
+      "arguments":{"amount_in":"1000000",
         "token_in":"USDC","token_out":"ACHS"}}}'`,
-    },
-  ]
+  },
+]
 
-  const copy = (code: string, name: string) => {
-    navigator.clipboard.writeText(code)
-    setCopied(name)
-    setTimeout(() => setCopied(null), 2000)
+const mcpCalls: McpCall[] = [
+  {
+    title: 'Quote a swap',
+    code: `{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_swap_quote",
+    "arguments": {
+      "amount_in": "1000000",
+      "token_in": "USDC",
+      "token_out": "ACHS"
+    }
+  }
+}`,
+  },
+  {
+    title: 'Add liquidity',
+    code: `{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "add_liquidity",
+    "arguments": {
+      "token_a": "USDC",
+      "token_b": "ACHS",
+      "amount_a": "500000000",
+      "amount_b": "30000000000"
+    }
+  }
+}`,
+  },
+  {
+    title: 'Launch token',
+    code: `{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "launch_token",
+    "arguments": {
+      "name": "Example Token",
+      "symbol": "EXM",
+      "supply": "1000000000",
+      "liquidity_usdc": "500000000"
+    }
+  }
+}`,
+  },
+]
+
+const rise = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string
+  title: string
+  description: string
+}) {
+  return (
+    <motion.div className="section-head" variants={rise} initial="hidden" whileInView="show" viewport={{ once: true }}>
+      <p className="eyebrow">{eyebrow}</p>
+      <h2>{title}</h2>
+      <p>{description}</p>
+    </motion.div>
+  )
+}
+
+function ProductCard({ product, delay }: { product: Product; delay: number }) {
+  return (
+    <motion.article
+      className="panel-card"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay }}
+    >
+      <div className="panel-top">
+        <span className="chip">{product.badge}</span>
+        <a href={product.href} target="_blank" rel="noreferrer" className="panel-link">
+          Visit <ExternalLink size={14} />
+        </a>
+      </div>
+      <h3>{product.name}</h3>
+      <p className="panel-description">{product.description}</p>
+      <ul>
+        {product.bullets.map((itemText) => (
+          <li key={itemText}>{itemText}</li>
+        ))}
+      </ul>
+    </motion.article>
+  )
+}
+
+function SnippetCard({
+  snippet,
+  copied,
+  onCopy,
+}: {
+  snippet: McpSnippet
+  copied: boolean
+  onCopy: (text: string, id: string) => void
+}) {
+  return (
+    <article className="snippet-card">
+      <div className="snippet-header">
+        <div>
+          <h4>{snippet.name}</h4>
+          <p>{snippet.path}</p>
+        </div>
+        <button type="button" onClick={() => onCopy(snippet.code, snippet.name)} className="copy-button">
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre>
+        <code>{snippet.code}</code>
+      </pre>
+    </article>
+  )
+}
+
+export default function App() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const copyText = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(id)
+      window.setTimeout(() => setCopiedId(null), 1800)
+    } catch {
+      setCopiedId(null)
+    }
   }
 
   return (
-    <section id="mcp" style={{ padding: '76px 20px' }}>
-      <div style={{ maxWidth: 840, margin: '0 auto' }}>
-
-        <FadeUp style={{ textAlign: 'center', marginBottom: 36 }}>
-          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 'clamp(19px, 3vw, 24px)', letterSpacing: -0.4, marginBottom: 9 }}>
-            MCP Server
-          </h2>
-          <p style={{ fontFamily: 'Inter', fontSize: 14, color: C.muted, maxWidth: 380, margin: '0 auto' }}>
-            Connect any AI agent to Achswap. Swap tokens, add liquidity, check pools — all through natural language.
-          </p>
-        </FadeUp>
-
-        {/* Capabilities */}
-        <FadeUp delay={0.05}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(126px,1fr))', gap: 8, marginBottom: 30 }}>
-            {capabilities.map((cap, i) => (
-              <motion.div
-                key={cap.cat}
-                initial={{ opacity: 0, scale: 0.94 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.04, duration: 0.35 }}
-                style={{
-                  padding: '11px 13px', borderRadius: 10,
-                  background: C.surface, border: `1px solid ${C.border}`,
-                  transition: 'border-color .2s',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.borderColor = C.blueBorder)}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.borderColor = C.border)}
-              >
-                <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 10.5, color: C.blue, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-                  {cap.cat}
-                </div>
-                {cap.items.map(it => (
-                  <div key={it} style={{ fontFamily: 'Inter', fontSize: 11, color: C.muted, lineHeight: 1.85 }}>• {it}</div>
-                ))}
-              </motion.div>
-            ))}
-          </div>
-        </FadeUp>
-
-        {/* Doc button */}
-        <FadeUp delay={0.08} style={{ textAlign: 'center', marginBottom: 24 }}>
-          <a
-            href="https://docs.achswap.app/technical/mcp"
-            target="_blank" rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '9px 20px', borderRadius: 8,
-              background: C.blue, color: C.bg,
-              fontFamily: 'Inter', fontWeight: 600, fontSize: 13,
-              textDecoration: 'none',
-              boxShadow: `0 4px 16px hsla(217,91%,60%,0.3)`,
-              transition: 'opacity .2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '.86')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-          >
-            Full Documentation <ExternalLink size={12} />
+    <div className="app-shell">
+      <header className="top-nav">
+        <div className="shell nav-inner">
+          <a href="#top" className="brand" onClick={() => setMenuOpen(false)}>
+            <img src="/img/logos/achswap-logo.png" alt="AchSwap" />
+            <span>AchSwap</span>
           </a>
-        </FadeUp>
 
-        {/* Config cards */}
-        <FadeUp delay={0.1}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }} className="cfg-grid">
-            {configs.map(cfg => (
-              <div key={cfg.name} style={{
-                borderRadius: 12, background: C.surface,
-                border: `1px solid ${C.border}`, overflow: 'hidden',
-              }}>
-                {/* card header */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '9px 13px', borderBottom: `1px solid ${C.border}`,
-                  background: C.surface2,
-                }}>
-                  <div>
-                    <div style={{ fontFamily: 'Inter', fontWeight: 600, fontSize: 12.5, color: '#fff' }}>{cfg.name}</div>
-                    <div style={{ fontFamily: 'Inter', fontSize: 10.5, color: C.muted, marginTop: 1 }}>{cfg.file}</div>
-                  </div>
-                  <motion.button
-                    whileTap={{ scale: 0.88 }}
-                    onClick={() => copy(cfg.code, cfg.name)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 4,
-                      padding: '4px 9px', borderRadius: 5,
-                      border: `1px solid ${C.border}`, background: C.bg,
-                      cursor: 'pointer', fontFamily: 'Inter', fontSize: 11, fontWeight: 500,
-                      color: copied === cfg.name ? '#4ade80' : C.muted,
-                      transition: 'color .2s',
-                    }}
-                  >
-                    <AnimatePresence mode="wait">
-                      {copied === cfg.name
-                        ? <motion.span key="y" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}><Check size={10} /></motion.span>
-                        : <motion.span key="n" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}><Copy size={10} /></motion.span>
-                      }
-                    </AnimatePresence>
-                    {copied === cfg.name ? 'Copied!' : 'Copy'}
-                  </motion.button>
-                </div>
-                {/* code */}
-                <pre style={{
-                  padding: '13px', margin: 0, overflowX: 'auto', maxHeight: 138,
-                  fontFamily: '"Fira Code","Cascadia Code","Courier New",monospace',
-                  fontSize: 10.5, lineHeight: 1.72,
-                  color: C.muted, background: `${C.bg}cc`,
-                }}>
-                  <code>{cfg.code}</code>
-                </pre>
-              </div>
+          <nav className="nav-links" aria-label="Main navigation">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target={link.external ? '_blank' : undefined}
+                rel={link.external ? 'noreferrer' : undefined}
+              >
+                {link.label}
+              </a>
             ))}
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  )
-}
+          </nav>
 
-/* ══════════════════════════════════════════
-   CTA
-══════════════════════════════════════════ */
-function CTA() {
-  return (
-    <section style={{ padding: '76px 20px' }}>
-      <div style={{ maxWidth: 520, margin: '0 auto' }}>
-        <FadeUp>
-          <div style={{
-            padding: 'clamp(34px, 5vw, 52px) clamp(22px, 5vw, 52px)',
-            borderRadius: 18, textAlign: 'center',
-            background: C.surface,
-            border: `1px solid ${C.blueBorder}`,
-            boxShadow: `0 0 60px hsla(217,91%,60%,0.07)`,
-            position: 'relative', overflow: 'hidden',
-          }}>
-            {/* top glow */}
-            <div style={{
-              position: 'absolute', top: -90, left: '50%', transform: 'translateX(-50%)',
-              width: 360, height: 200, borderRadius: '50%',
-              background: `radial-gradient(circle, hsla(217,91%,60%,0.11) 0%, transparent 70%)`,
-              pointerEvents: 'none',
-            }} />
-            <h2 style={{
-              fontFamily: 'Inter', fontWeight: 800,
-              fontSize: 'clamp(21px, 4vw, 30px)', letterSpacing: -0.6,
-              marginBottom: 9, position: 'relative',
-            }}>Ready to swap?</h2>
-            <p style={{
-              fontFamily: 'Inter', fontSize: 14, color: C.muted,
-              marginBottom: 26, lineHeight: 1.65, position: 'relative',
-            }}>
-              Connect your wallet and start trading on the fastest DEX on ARC Network.
-            </p>
-            <a href="https://trade.achswap.app" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '13px 28px', borderRadius: 9,
-              background: C.blue, color: C.bg,
-              fontFamily: 'Inter', fontWeight: 700, fontSize: 14,
-              textDecoration: 'none', position: 'relative',
-              boxShadow: `0 4px 22px ${C.blueGlow}`,
-              transition: 'transform .2s, box-shadow .2s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 34px hsla(217,91%,60%,0.5)` }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 22px ${C.blueGlow}` }}
+          <div className="nav-actions">
+            <a href="https://trade.achswap.app" target="_blank" rel="noreferrer" className="btn btn-primary">
+              Launch App <ArrowRight size={15} />
+            </a>
+            <button
+              type="button"
+              className="menu-toggle"
+              aria-label="Toggle navigation"
+              onClick={() => setMenuOpen((state) => !state)}
             >
-              <Wallet size={16} /> Connect Wallet
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {menuOpen ? (
+            <motion.nav
+              className="mobile-menu"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22 }}
+            >
+              <div className="shell mobile-menu-inner">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={link.external ? '_blank' : undefined}
+                    rel={link.external ? 'noreferrer' : undefined}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <a
+                  href="https://trade.achswap.app"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setMenuOpen(false)}
+                  className="mobile-launch"
+                >
+                  Launch App
+                </a>
+              </div>
+            </motion.nav>
+          ) : null}
+        </AnimatePresence>
+      </header>
+
+      <main id="top">
+        <section className="hero section">
+          <div className="shell hero-grid">
+            <motion.div variants={rise} initial="hidden" animate="show" className="hero-copy">
+              <p className="eyebrow">Introducing the Ach Ecosystem</p>
+              <h1>Everything we have been building is now live.</h1>
+              <p className="hero-text">
+                This is more than a DEX. Ach is infrastructure for users, developers, and AI systems operating across
+                trading, launching, bridging, and prediction markets.
+              </p>
+              <div className="hero-actions">
+                <a href="https://trade.achswap.app" target="_blank" rel="noreferrer" className="btn btn-primary">
+                  Explore AchSwap <ArrowRight size={15} />
+                </a>
+                <a href="https://docs.achswap.app" target="_blank" rel="noreferrer" className="btn btn-muted">
+                  Read Docs
+                </a>
+              </div>
+              <div className="hero-social">
+                <span>Follow updates on</span>
+                <a href="https://x.com/AchPredict" target="_blank" rel="noreferrer">
+                  @AchPredict <ExternalLink size={13} />
+                </a>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="hero-facts"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.08 }}
+            >
+              <div className="fact-card">
+                <Zap size={16} />
+                <div>
+                  <h4>AMM + CLMM</h4>
+                  <p>Dual architecture for flexible and concentrated liquidity flows.</p>
+                </div>
+              </div>
+              <div className="fact-card">
+                <Shield size={16} />
+                <div>
+                  <h4>Gasless Experience</h4>
+                  <p>Lower friction execution for traders and first-time users.</p>
+                </div>
+              </div>
+              <div className="fact-card">
+                <Layers size={16} />
+                <div>
+                  <h4>9-Chain Transfers</h4>
+                  <p>Bridge powered by Circle CCTP v2 inside the same app stack.</p>
+                </div>
+              </div>
+              <div className="fact-card">
+                <TrendingUp size={16} />
+                <div>
+                  <h4>LMSR Prediction Markets</h4>
+                  <p>Fully decentralized market pricing via AchMarket.</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="ecosystem" className="section">
+          <div className="shell">
+            <SectionHeader
+              eyebrow="Ecosystem"
+              title="Products built to work as one stack"
+              description="Each product can stand alone, but the full value is in how they connect across trading, launch, bridge, and markets."
+            />
+            <div className="panel-grid">
+              {ecosystemProducts.map((product, index) => (
+                <ProductCard key={product.name} product={product} delay={index * 0.06} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="infrastructure" className="section section-alt">
+          <div className="shell">
+            <SectionHeader
+              eyebrow="Developer Infrastructure"
+              title="Integration primitives for apps, bots, and agent systems"
+              description="Ach infrastructure is designed for direct product integration, from pricing routes to fully programmable execution."
+            />
+            <div className="panel-grid panel-grid-two">
+              {infrastructureProducts.map((product, index) => (
+                <ProductCard key={product.name} product={product} delay={index * 0.08} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="mcp" className="section">
+          <div className="shell">
+            <SectionHeader
+              eyebrow="MCP Server"
+              title="Example MCP setup and request payloads"
+              description="Keep these examples as a quick start for Claude Code, Cline, OpenCode, and direct JSON-RPC calls."
+            />
+
+            <motion.div
+              className="capability-grid"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+            >
+              {capabilities.map((capability) => (
+                <article key={capability.category} className="capability-card">
+                  <h4>{capability.category}</h4>
+                  <ul>
+                    {capability.items.map((entry) => (
+                      <li key={entry}>{entry}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </motion.div>
+
+            <div className="snippet-grid">
+              {mcpSnippets.map((snippet) => (
+                <SnippetCard
+                  key={snippet.name}
+                  snippet={snippet}
+                  copied={copiedId === snippet.name}
+                  onCopy={copyText}
+                />
+              ))}
+            </div>
+
+            <div className="example-grid">
+              {mcpCalls.map((call) => (
+                <article key={call.title} className="example-card">
+                  <div className="example-head">{call.title}</div>
+                  <pre>
+                    <code>{call.code}</code>
+                  </pre>
+                </article>
+              ))}
+            </div>
+
+            <div className="mcp-footer">
+              <a href="https://docs.achswap.app/technical/mcp" target="_blank" rel="noreferrer" className="btn btn-muted">
+                Full MCP Documentation <ExternalLink size={14} />
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-compact">
+          <div className="shell">
+            <motion.div
+              className="closing-panel"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35 }}
+            >
+              <div>
+                <p className="eyebrow">Ready to build or trade?</p>
+                <h3>Start with AchSwap, then scale with infrastructure.</h3>
+              </div>
+              <div className="closing-actions">
+                <a href="https://trade.achswap.app" target="_blank" rel="noreferrer" className="btn btn-primary">
+                  Open Trade App <ArrowRight size={15} />
+                </a>
+                <a href="https://docs.achswap.app" target="_blank" rel="noreferrer" className="btn btn-muted">
+                  Learn More <ExternalLink size={14} />
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="site-footer">
+        <div className="shell footer-inner">
+          <a href="#top" className="brand">
+            <img src="/img/logos/achswap-logo.png" alt="AchSwap" />
+            <span>AchSwap Ecosystem</span>
+          </a>
+          <div className="footer-links">
+            <a href="https://trade.achswap.app" target="_blank" rel="noreferrer">
+              Trade
+            </a>
+            <a href="https://prediction.achswap.app" target="_blank" rel="noreferrer">
+              AchMarket
+            </a>
+            <a href="https://docs.achswap.app" target="_blank" rel="noreferrer">
+              Docs
+            </a>
+            <a href="https://x.com/AchPredict" target="_blank" rel="noreferrer">
+              @AchPredict
             </a>
           </div>
-        </FadeUp>
-      </div>
-    </section>
-  )
-}
-
-/* ══════════════════════════════════════════
-   FOOTER
-══════════════════════════════════════════ */
-function Footer() {
-  return (
-    <footer style={{ padding: '22px 20px', borderTop: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
-        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <img src="/img/logos/achswap-logo.png" alt="Achswap" style={{ width: 22, height: 22, borderRadius: 6 }} />
-          <span style={{ fontFamily: 'Inter', fontWeight: 500, fontSize: 13.5, color: C.muted }}>Achswap</span>
-        </a>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {['Twitter', 'Discord', 'Telegram', 'GitHub'].map(l => (
-            <a key={l} href="#" style={{ fontFamily: 'Inter', fontSize: 13, color: C.muted, textDecoration: 'none', transition: 'color .2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
-            >{l}</a>
-          ))}
         </div>
-        <p style={{ fontFamily: 'Inter', fontSize: 12, color: 'hsl(215 20% 38%)' }}>© 2026 Achswap</p>
-      </div>
-    </footer>
-  )
-}
-
-/* ══════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════ */
-export default function App() {
-  return (
-    <>
-      <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body { background: ${C.bg}; color: #fff; min-height: 100vh; -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: ${C.bg}; }
-        ::-webkit-scrollbar-thumb { background: ${C.blue}; border-radius: 3px; }
-
-        @media (min-width: 640px) {
-          .dn-links { display: flex !important; }
-          .mn-btn   { display: none !important; }
-          .stats-grid { grid-template-columns: repeat(4,1fr) !important; }
-          .feat-grid  { grid-template-columns: repeat(4,1fr) !important; }
-          .cfg-grid   { grid-template-columns: repeat(2,1fr) !important; }
-        }
-        @media (max-width: 639px) {
-          .dn-links { display: none !important; }
-          .mn-btn   { display: flex !important; }
-          .cfg-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-        }
-      `}</style>
-      <div style={{ minHeight: '100vh', background: C.bg, color: '#fff' }}>
-        <Navbar />
-        <Hero />
-        <Stats />
-        <Tokens />
-        <Features />
-        <MCPSection />
-        <CTA />
-        <Footer />
-      </div>
-    </>
+      </footer>
+    </div>
   )
 }
