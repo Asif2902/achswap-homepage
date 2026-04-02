@@ -37,7 +37,7 @@ const navLinks: NavLink[] = [
   { label: 'Infrastructure', href: '#infrastructure' },
   { label: 'MCP', href: '#mcp' },
   { label: 'Docs', href: 'https://docs.achswap.app', external: true },
-  { label: 'Twitter', href: 'https://x.com/AchPredict', external: true },
+  { label: 'Twitter', href: 'https://x.com/AchProtocol', external: true },
 ]
 
 const ecosystemProducts: Product[] = [
