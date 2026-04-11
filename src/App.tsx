@@ -53,6 +53,17 @@ const ecosystemProducts: Product[] = [
     ],
   },
   {
+    name: 'RWA Trading Rails',
+    href: 'https://trade.achswap.app',
+    badge: 'Tokenized Assets',
+    description: 'Trade tokenized real-world exposures through dedicated buy/redeem routes integrated into AchSwap.',
+    bullets: [
+      'USDC to RWA buy flow and redeem back to USDC',
+      'Unified execution in the same swap interface',
+      'Built for transparent on-chain settlement',
+    ],
+  },
+  {
     name: 'Token Launch',
     href: 'https://trade.achswap.app/launch',
     badge: 'Creator Tools',
@@ -402,10 +413,10 @@ export default function App() {
           <div className="shell hero-grid">
             <motion.div variants={rise} initial="hidden" animate="show" className="hero-copy">
               <p className="eyebrow">Introducing the Ach Ecosystem</p>
-              <h1>Everything we have been building is now live.</h1>
+              <h1>Everything we have been building is now live, including RWA rails.</h1>
               <p className="hero-text">
                 This is more than a DEX. Ach is infrastructure for users, developers, and AI systems operating across
-                trading, launching, bridging, and prediction markets.
+                trading, RWA buy/redeem flows, launching, bridging, and prediction markets.
               </p>
               <div className="hero-actions">
                 <a href="https://trade.achswap.app" target="_blank" rel="noreferrer" className="btn btn-primary">
@@ -441,6 +452,13 @@ export default function App() {
                 <div>
                   <h4>Gasless Experience</h4>
                   <p>Lower friction execution for traders and first-time users.</p>
+                </div>
+              </div>
+              <div className="fact-card">
+                <Layers size={16} />
+                <div>
+                  <h4>RWA Buy & Redeem</h4>
+                  <p>Integrated tokenized-asset flows directly inside AchSwap with USDC settlement paths.</p>
                 </div>
               </div>
               <div className="fact-card">
