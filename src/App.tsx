@@ -38,6 +38,7 @@ const navLinks: NavLink[] = [
   { label: 'MCP', href: '#mcp' },
   { label: 'Docs', href: 'https://docs.achswap.app', external: true },
   { label: 'Twitter', href: 'https://x.com/AchProtocol', external: true },
+  { label: 'Telegram', href: 'https://t.me/AchProtocol', external: true },
 ]
 
 const ecosystemProducts: Product[] = [
@@ -428,8 +429,11 @@ export default function App() {
               </div>
               <div className="hero-social">
                 <span>Follow updates on</span>
-                <a href="https://x.com/AchPredict" target="_blank" rel="noreferrer">
-                  @AchPredict <ExternalLink size={13} />
+                <a href="https://x.com/AchProtocol" target="_blank" rel="noreferrer">
+                  @AchProtocol <ExternalLink size={13} />
+                </a>
+                <a href="https://t.me/AchProtocol" target="_blank" rel="noreferrer" className="ml-3">
+                  Telegram <ExternalLink size={13} />
                 </a>
               </div>
             </motion.div>
@@ -608,8 +612,11 @@ export default function App() {
             <a href="https://docs.achswap.app" target="_blank" rel="noreferrer">
               Docs
             </a>
-            <a href="https://x.com/AchPredict" target="_blank" rel="noreferrer">
-              @AchPredict
+            <a href="https://x.com/AchProtocol" target="_blank" rel="noreferrer">
+              @AchProtocol
+            </a>
+            <a href="https://t.me/AchProtocol" target="_blank" rel="noreferrer" className="ml-4">
+              Telegram
             </a>
           </div>
         </div>
